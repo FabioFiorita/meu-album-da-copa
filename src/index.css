@@ -151,33 +151,19 @@
     contain: layout paint;
   }
 
-  .team-card::before,
-  .team-card::after {
-    content: "";
+  .team-background-forms {
+    height: 100%;
+    inset: 0;
+    opacity: 0.9;
     pointer-events: none;
     position: absolute;
+    width: 100%;
     z-index: 0;
   }
 
-  .team-card[data-expanded="true"]::before {
-    background: var(--team-secondary);
-    border-radius: 999px;
-    height: 36%;
-    left: -18%;
-    opacity: 0.9;
-    top: 18%;
-    width: 92%;
-  }
-
-  .team-card[data-expanded="true"]::after {
-    background: var(--team-accent);
-    border-bottom-left-radius: 999px;
-    border-top-left-radius: 999px;
-    height: 58%;
-    opacity: 0.86;
-    right: -17%;
-    top: 6%;
-    width: 52%;
+  .repetidas-tab .team-background-forms {
+    filter: blur(2.5px);
+    transform: scale(1.015);
   }
 
   .country-stickers-panel {

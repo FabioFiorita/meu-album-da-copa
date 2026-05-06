@@ -33,6 +33,7 @@ import {
   sectionStyle,
   slotStyle,
 } from "./teamVisuals";
+import { TeamBackgroundForms } from "./TeamBackgroundForms";
 
 type Props = { session: AlbumSession };
 
@@ -213,7 +214,7 @@ export function RepetidasTab({ session }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
+    <div className="repetidas-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
       <section className="rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
         <div className="flex items-start gap-3">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
@@ -252,7 +253,8 @@ export function RepetidasTab({ session }: Props) {
         <Button
           type="button"
           size="lg"
-          className="mt-4 h-12 w-full rounded-2xl bg-[linear-gradient(180deg,#16d866,#0fb653)] text-[15px] font-black text-white shadow-[0_8px_22px_rgba(16,190,88,0.24)] hover:bg-[#14c75d]"
+          variant="outline"
+          className="mt-4 h-12 w-full rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[15px] font-black text-[#d6b45d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
           onClick={() => void copyAllAsText()}
           disabled={dupBySection.size === 0}
         >
@@ -318,6 +320,7 @@ export function RepetidasTab({ session }: Props) {
                 style={sectionStyle(theme)}
                 className="team-card relative overflow-hidden rounded-[1.15rem] border-2 px-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
               >
+                {shouldRenderRows && <TeamBackgroundForms />}
                 <button
                   type="button"
                   aria-expanded={isExpanded}

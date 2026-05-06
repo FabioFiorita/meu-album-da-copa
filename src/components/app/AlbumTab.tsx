@@ -25,6 +25,7 @@ import type { AlbumSession } from "@/lib/albumSession";
 import { errorMessage } from "@/lib/errors";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
 import { cn } from "@/lib/utils";
+import { TeamBackgroundForms } from "./TeamBackgroundForms";
 
 type Props = { session: AlbumSession };
 type SectionTemplate = (typeof WC_2026_TEMPLATE.sections)[number];
@@ -318,6 +319,7 @@ export function AlbumTab({ session }: Props) {
               style={sectionStyle(theme)}
               className="team-card relative overflow-hidden rounded-[1.15rem] border-2 px-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
             >
+              {shouldRenderSlots && <TeamBackgroundForms />}
               <button
                 type="button"
                 aria-expanded={isExpanded}
