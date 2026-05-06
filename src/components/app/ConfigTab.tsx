@@ -154,9 +154,9 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  void copyText(session.code).then(() =>
-                    toast.success("Código público copiado."),
-                  )
+                  void copyText(session.code)
+                    .then(() => toast.success("Código público copiado."))
+                    .catch((e) => toast.error(errorMessage(e)))
                 }
               >
                 Copiar código público
@@ -237,10 +237,12 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
             <AlertDialogCancel>Fechar</AlertDialogCancel>
             <AlertDialogAction
               type="button"
-              onClick={() =>
-                newKeysOpen &&
-                void copyText(newKeysOpen).then(() => toast.success("Copiado."))
-              }
+              onClick={() => {
+                if (!newKeysOpen) return;
+                void copyText(newKeysOpen)
+                  .then(() => toast.success("Copiado."))
+                  .catch((e) => toast.error(errorMessage(e)));
+              }}
             >
               Copiar
             </AlertDialogAction>
@@ -277,10 +279,12 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
             <AlertDialogAction
               type="button"
               onClick={() =>
-                void copyText(session.fullAccessCode).then(() => {
-                  toast.success("Copiado.");
-                  setShareFullOpen(false);
-                })
+                void copyText(session.fullAccessCode)
+                  .then(() => {
+                    toast.success("Copiado.");
+                    setShareFullOpen(false);
+                  })
+                  .catch((e) => toast.error(errorMessage(e)))
               }
             >
               Copiar

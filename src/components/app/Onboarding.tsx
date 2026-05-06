@@ -119,10 +119,12 @@ export function Onboarding({
           </CardHeader>
           <CardContent>
             <Dialog open={openEnter} onOpenChange={setOpenEnter}>
-              <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="w-full">
-                  Colar código de acesso
-                </Button>
+              <DialogTrigger
+                render={
+                  <Button type="button" variant="outline" className="w-full" />
+                }
+              >
+                Colar código de acesso
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -145,7 +147,9 @@ export function Onboarding({
                         <InputGroupButton
                           type="button"
                           onClick={() =>
-                            void pasteFromClipboard().then(setPasteValue)
+                            void pasteFromClipboard()
+                              .then(setPasteValue)
+                              .catch((e) => toast.error(errorMessage(e)))
                           }
                         >
                           Colar

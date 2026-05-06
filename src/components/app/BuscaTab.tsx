@@ -29,7 +29,11 @@ export function BuscaTab({ session }: Props) {
   const [country, setCountry] = useState("");
   const [num, setNum] = useState("");
 
-  const resolved = useMemo(() => {
+  const resolved = useMemo<
+    | null
+    | { error: string; key?: undefined; sectionId?: undefined; number?: undefined }
+    | { error?: undefined; key: string; sectionId: string; number: string }
+  >(() => {
     const c = country.trim().toUpperCase();
     const n = num.trim();
     if (c.length !== 3 || n.length === 0) return null;
@@ -43,18 +47,18 @@ export function BuscaTab({ session }: Props) {
   }, [country, num]);
 
   const count =
-    resolved && "key" in resolved && snapshot
+    resolved && resolved.key && snapshot
       ? snapshot.stickers.find((s) => s.key === resolved.key)?.count ?? 0
       : 0;
 
   async function runMark(mode: "owned" | "duplicate") {
-    if (!resolved || !("key" in resolved)) return;
+    if (!resolved || !resolved.key) return;
     try {
       await markQuick({
         code: session.code,
         writeKey: session.writeKey,
-        sectionId: resolved.sectionId,
-        number: resolved.number,
+        sectionId: resolved.sectionId!,
+        number: resolved.number!,
         mode,
       });
       toast.success(mode === "owned" ? "Possuída." : "Repetida ajustada.");
@@ -147,11 +151,11 @@ export function BuscaTab({ session }: Props) {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : resolved && "error" in resolved ? (
+      ) : resolved && resolved.error ? (
         <Alert variant="destructive">
           <AlertDescription>{resolved.error}</AlertDescription>
         </Alert>
-      ) : resolved && "key" in resolved ? (
+      ) : resolved && resolved.key ? (
         <Card>
           <CardHeader className="flex flex-col gap-3">
             <CardTitle className="text-base font-mono">{resolved.key}</CardTitle>

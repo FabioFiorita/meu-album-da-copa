@@ -126,7 +126,7 @@ export function AlbumTab({ session }: Props) {
           </InputGroup>
         </Field>
       </FieldGroup>
-      <Accordion type="single" collapsible className="flex flex-col gap-2">
+      <Accordion className="flex flex-col gap-2">
         {filteredSections.map((sec) => (
           <AccordionItem key={sec.id} value={sec.id} className="border rounded-lg px-2">
             <AccordionTrigger className="text-sm hover:no-underline">

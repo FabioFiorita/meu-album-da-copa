@@ -107,18 +107,30 @@ export function RepetidasTab({ session }: Props) {
       generatedAt: Date.now(),
       duplicates,
     });
-    await copyText(payload);
-    toast.success("Lista de repetidas copiada.");
+    try {
+      await copyText(payload);
+      toast.success("Lista de repetidas copiada.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
   }
 
   async function sharePublic() {
-    await copyText(normalizeAlbumCode(session.code));
-    toast.success("Código público copiado.");
+    try {
+      await copyText(normalizeAlbumCode(session.code));
+      toast.success("Código público copiado.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
   }
 
   async function shareFull() {
-    await copyText(session.fullAccessCode);
-    toast.success("Código completo copiado. Trate como segredo.");
+    try {
+      await copyText(session.fullAccessCode);
+      toast.success("Código completo copiado. Trate como segredo.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
   }
 
   function exportMissingForCompare() {
@@ -136,9 +148,9 @@ export function RepetidasTab({ session }: Props) {
       albumCode: session.code,
       missingKeys,
     });
-    void copyText(payload).then(() =>
-      toast.success("Faltantes copiados para compartilhar."),
-    );
+    void copyText(payload)
+      .then(() => toast.success("Faltantes copiados para compartilhar."))
+      .catch((e) => toast.error(errorMessage(e)));
   }
 
   return (
@@ -159,15 +171,17 @@ export function RepetidasTab({ session }: Props) {
             <UploadIcon />
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="outline"
-                aria-label="Compartilhar"
-              >
-                <Share2Icon />
-              </Button>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="outline"
+                  aria-label="Compartilhar"
+                />
+              }
+            >
+              <Share2Icon />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => void sharePublic()}>
@@ -224,7 +238,7 @@ export function RepetidasTab({ session }: Props) {
           </CardHeader>
         </Card>
       ) : (
-      <Accordion type="multiple" className="flex flex-col gap-2">
+      <Accordion multiple className="flex flex-col gap-2">
         {sections.map((sec) => {
           const rows = dupBySection.get(sec.id) ?? [];
           return (
