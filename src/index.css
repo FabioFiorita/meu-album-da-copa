@@ -136,3 +136,159 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .country-name-outline {
+    -webkit-text-stroke: 0.28px rgba(0, 0, 0, 0.72);
+    paint-order: stroke fill;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.92),
+      0 0 2px rgba(0, 0, 0, 0.88);
+  }
+
+  .team-card {
+    background-color: var(--team-primary);
+    contain: layout paint;
+  }
+
+  .team-card::before,
+  .team-card::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+  }
+
+  .team-card[data-expanded="true"]::before {
+    background: var(--team-secondary);
+    border-radius: 999px;
+    height: 36%;
+    left: -18%;
+    opacity: 0.9;
+    top: 18%;
+    width: 92%;
+  }
+
+  .team-card[data-expanded="true"]::after {
+    background: var(--team-accent);
+    border-bottom-left-radius: 999px;
+    border-top-left-radius: 999px;
+    height: 58%;
+    opacity: 0.86;
+    right: -17%;
+    top: 6%;
+    width: 52%;
+  }
+
+  .country-stickers-panel {
+    contain: layout paint;
+    max-height: 34rem;
+    overflow: hidden;
+    will-change: max-height, opacity;
+  }
+
+  .country-stickers-panel[data-state="open"] {
+    animation: country-panel-open 170ms cubic-bezier(0.2, 0.82, 0.2, 1);
+  }
+
+  .country-stickers-panel[data-state="closing"] {
+    animation: country-panel-close 130ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  .country-stickers-panel-inner {
+    min-height: 0;
+    overflow: hidden;
+    transform: translateZ(0);
+    will-change: opacity, transform;
+  }
+
+  .country-stickers-panel[data-state="open"] .country-stickers-panel-inner {
+    animation: country-panel-content-open 170ms cubic-bezier(0.2, 0.82, 0.2, 1);
+  }
+
+  .country-stickers-panel[data-state="closing"] .country-stickers-panel-inner {
+    animation: country-panel-content-close 110ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .sticker-slot-lite {
+    contain: paint;
+    isolation: isolate;
+  }
+
+  .sticker-slot-lite::before {
+    background: url("/slot-26-white.png") center / contain no-repeat;
+    content: "";
+    inset: 5% 9%;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+  }
+
+  .sticker-slot-label {
+    align-items: center;
+    color: var(--slot-ink);
+    display: flex;
+    flex-direction: column;
+    font-size: 8px;
+    font-weight: 900;
+    inset-inline: 0;
+    justify-content: center;
+    line-height: 1.05;
+    position: absolute;
+    text-align: center;
+    top: 21%;
+    z-index: 3;
+  }
+
+  @keyframes country-panel-open {
+    from {
+      max-height: 0;
+      opacity: 0.72;
+    }
+    to {
+      max-height: 34rem;
+      opacity: 1;
+    }
+  }
+
+  @keyframes country-panel-close {
+    from {
+      max-height: 34rem;
+      opacity: 1;
+    }
+    to {
+      max-height: 0;
+      opacity: 0;
+    }
+  }
+
+  @keyframes country-panel-content-open {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes country-panel-content-close {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .country-stickers-panel,
+    .country-stickers-panel-inner {
+      animation: none !important;
+    }
+  }
+}
