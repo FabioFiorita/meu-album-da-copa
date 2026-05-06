@@ -203,20 +203,20 @@ export function AlbumTab({ session }: Props) {
                 <Button
                   type="button"
                   size="lg"
-                  className="text-lg font-semibold"
-                  onClick={() => void applyDelta(openSticker.key, 1)}
-                >
-                  +1
-                </Button>
-                <Button
-                  type="button"
-                  size="lg"
                   variant="outline"
-                  className="text-lg font-semibold"
+                  className="h-14 text-2xl font-semibold"
                   disabled={openCount <= 0}
                   onClick={() => void applyDelta(openSticker.key, -1)}
                 >
                   −1
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-14 text-2xl font-semibold"
+                  onClick={() => void applyDelta(openSticker.key, 1)}
+                >
+                  +1
                 </Button>
               </div>
             </div>

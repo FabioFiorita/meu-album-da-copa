@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { ListFilterIcon, MinusIcon, PlusIcon, Share2Icon, UploadIcon } from "lucide-react";
+import { CopyIcon, MinusIcon, PlusIcon, Share2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
@@ -31,15 +31,30 @@ import {
 import type { AlbumSession } from "@/lib/albumSession";
 import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
-import {
-  buildMissingExport,
-  encodeDuplicatesPayloadV1,
-} from "@/lib/sharePayloads";
+import { encodeDuplicatesPayloadV1 } from "@/lib/sharePayloads";
 import { normalizeAlbumCode } from "@convex/lib/access";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
-import { ImportarFaltantesDialog } from "./ImportarFaltantesDialog";
 
 type Props = { session: AlbumSession };
+
+type DupRow = {
+  key: string;
+  sectionId: string;
+  number: string;
+  count: number;
+};
+
+function sortByNumber(a: DupRow, b: DupRow) {
+  const an = Number(a.number);
+  const bn = Number(b.number);
+  if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
+  return a.number.localeCompare(b.number);
+}
+
+function formatSectionLine(sectionId: string, rows: DupRow[]): string {
+  const sorted = [...rows].sort(sortByNumber);
+  return `${sectionId}: ${sorted.map((r) => r.number).join(", ")}`;
+}
 
 export function RepetidasTab({ session }: Props) {
   const snapshot = useQuery(api.albums.getPrivateSnapshot, {
@@ -48,20 +63,27 @@ export function RepetidasTab({ session }: Props) {
   });
   const addCopies = useMutation(api.stickers.addCopies);
   const [q, setQ] = useState("");
-  const [importOpen, setImportOpen] = useState(false);
 
-  const dupRows = useMemo(() => {
+  const dupRows: DupRow[] = useMemo(() => {
     if (!snapshot) return [];
-    return snapshot.stickers.filter((s) => s.count >= 2);
+    return snapshot.stickers
+      .filter((s) => s.count >= 2)
+      .map((s) => ({
+        key: s.key,
+        sectionId: s.sectionId,
+        number: s.number,
+        count: s.count,
+      }));
   }, [snapshot]);
 
   const dupBySection = useMemo(() => {
-    const m = new Map<string, typeof dupRows>();
+    const m = new Map<string, DupRow[]>();
     for (const r of dupRows) {
       const arr = m.get(r.sectionId) ?? [];
       arr.push(r);
       m.set(r.sectionId, arr);
     }
+    for (const [, arr] of m) arr.sort(sortByNumber);
     return m;
   }, [dupRows]);
 
@@ -78,8 +100,7 @@ export function RepetidasTab({ session }: Props) {
     return list;
   }, [dupBySection, q]);
 
-  const totalDupes =
-    snapshot?.album.duplicateCount ?? 0;
+  const totalDupes = snapshot?.album.duplicateCount ?? 0;
 
   async function onDelta(key: string, delta: number) {
     try {
@@ -94,7 +115,31 @@ export function RepetidasTab({ session }: Props) {
     }
   }
 
-  async function exportDupes() {
+  async function copySection(sectionId: string) {
+    const rows = dupBySection.get(sectionId);
+    if (!rows || rows.length === 0) return;
+    try {
+      await copyText(formatSectionLine(sectionId, rows));
+      toast.success(`${sectionId} copiado.`);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
+
+  async function copyAllAsText() {
+    if (dupBySection.size === 0) return;
+    const lines = WC_2026_TEMPLATE.sections
+      .filter((s) => dupBySection.has(s.id))
+      .map((s) => formatSectionLine(s.id, dupBySection.get(s.id)!));
+    try {
+      await copyText(lines.join("\n"));
+      toast.success("Lista de repetidas copiada.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
+
+  async function exportEncodedDupes() {
     if (!snapshot) return;
     const duplicates = snapshot.stickers
       .filter((s) => s.count > 1)
@@ -109,7 +154,7 @@ export function RepetidasTab({ session }: Props) {
     });
     try {
       await copyText(payload);
-      toast.success("Lista de repetidas copiada.");
+      toast.success("Payload FIGUS_DUPLICATES copiado.");
     } catch (e) {
       toast.error(errorMessage(e));
     }
@@ -124,35 +169,6 @@ export function RepetidasTab({ session }: Props) {
     }
   }
 
-  async function shareFull() {
-    try {
-      await copyText(session.fullAccessCode);
-      toast.success("Código completo copiado. Trate como segredo.");
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
-
-  function exportMissingForCompare() {
-    if (!snapshot) return;
-    const missingKeys: string[] = [];
-    for (const sec of WC_2026_TEMPLATE.sections) {
-      for (const st of sec.stickers) {
-        const c =
-          snapshot.stickers.find((x) => x.key === st.key)?.count ?? 0;
-        if (c < 1) missingKeys.push(st.key);
-      }
-    }
-    const payload = buildMissingExport({
-      templateId: "wc2026",
-      albumCode: session.code,
-      missingKeys,
-    });
-    void copyText(payload)
-      .then(() => toast.success("Faltantes copiados para compartilhar."))
-      .catch((e) => toast.error(errorMessage(e)));
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-28 pt-2">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -163,12 +179,13 @@ export function RepetidasTab({ session }: Props) {
         <div className="flex flex-wrap gap-1">
           <Button
             type="button"
-            size="icon-sm"
+            size="sm"
             variant="outline"
-            aria-label="Exportar"
-            onClick={() => void exportDupes()}
+            onClick={() => void copyAllAsText()}
+            disabled={dupBySection.size === 0}
           >
-            <UploadIcon />
+            <CopyIcon />
+            Copiar tudo
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -187,23 +204,11 @@ export function RepetidasTab({ session }: Props) {
               <DropdownMenuItem onClick={() => void sharePublic()}>
                 Código público (comparação)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void shareFull()}>
-                Código completo (edição)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportMissingForCompare()}>
-                Copiar faltantes (FIGUS_MISSING)
+              <DropdownMenuItem onClick={() => void exportEncodedDupes()}>
+                Payload FIGUS_DUPLICATES
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="outline"
-            aria-label="Importar faltantes"
-            onClick={() => setImportOpen(true)}
-          >
-            <ListFilterIcon />
-          </Button>
         </div>
       </div>
       <FieldGroup>
@@ -238,70 +243,92 @@ export function RepetidasTab({ session }: Props) {
           </CardHeader>
         </Card>
       ) : (
-      <Accordion multiple className="flex flex-col gap-2">
-        {sections.map((sec) => {
-          const rows = dupBySection.get(sec.id) ?? [];
-          return (
-            <AccordionItem
-              key={sec.id}
-              value={sec.id}
-              className="border rounded-lg px-2"
-            >
-              <AccordionTrigger className="text-sm hover:no-underline">
-                <span className="flex flex-1 items-center gap-2">
-                  <span aria-hidden>{sec.emoji ?? "🏷️"}</span>
-                  <span className="font-medium">{sec.id}</span>
-                  <Badge variant="secondary" className="ml-auto">
-                    {rows.reduce((s, r) => s + (r.count - 1), 0)}
-                  </Badge>
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {rows.map((r) => (
-                    <div
-                      key={r.key}
-                      className="flex w-20 shrink-0 flex-col items-center gap-2 rounded-lg border-2 p-2"
-                    >
-                      <span className="text-lg font-semibold tabular-nums">
-                        {r.number}
+        <Accordion multiple className="flex flex-col gap-2">
+          {sections.map((sec) => {
+            const rows = dupBySection.get(sec.id) ?? [];
+            const totalExtras = rows.reduce((s, r) => s + (r.count - 1), 0);
+            const summary = rows.map((r) => r.number).join(", ");
+            return (
+              <AccordionItem
+                key={sec.id}
+                value={sec.id}
+                className="border rounded-lg px-2"
+              >
+                <AccordionTrigger className="text-sm hover:no-underline">
+                  <span className="flex flex-1 flex-col gap-0.5 text-left">
+                    <span className="flex items-center gap-2">
+                      <span aria-hidden>{sec.emoji ?? "🏷️"}</span>
+                      <span className="font-medium">{sec.id}</span>
+                      <span className="text-muted-foreground">
+                        {sec.title}
                       </span>
-                      <div className="flex gap-1">
-                        <Button
-                          type="button"
-                          size="icon-sm"
-                          variant="secondary"
-                          className="size-7 rounded-full"
-                          aria-label="Menos uma repetida"
-                          onClick={() => void onDelta(r.key, -1)}
-                        >
-                          <MinusIcon />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon-sm"
-                          variant="secondary"
-                          className="size-7 rounded-full"
-                          aria-label="Mais uma repetida"
-                          onClick={() => void onDelta(r.key, 1)}
-                        >
-                          <PlusIcon />
-                        </Button>
-                      </div>
+                      <Badge variant="secondary" className="ml-auto">
+                        {totalExtras}
+                      </Badge>
+                    </span>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {summary}
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-1 pb-2">
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void copySection(sec.id);
+                        }}
+                      >
+                        <CopyIcon />
+                        Copiar {sec.id}
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+                    {rows.map((r) => (
+                      <div
+                        key={r.key}
+                        className="flex items-center gap-3 rounded-md border px-3 py-2"
+                      >
+                        <span className="w-10 text-base font-semibold tabular-nums">
+                          #{r.number}
+                        </span>
+                        <Badge variant="secondary" className="tabular-nums">
+                          ×{r.count - 1}
+                        </Badge>
+                        <div className="ml-auto flex gap-2">
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="outline"
+                            className="size-9 rounded-full"
+                            aria-label="Menos uma repetida"
+                            onClick={() => void onDelta(r.key, -1)}
+                          >
+                            <MinusIcon />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="default"
+                            className="size-9 rounded-full"
+                            aria-label="Mais uma repetida"
+                            onClick={() => void onDelta(r.key, 1)}
+                          >
+                            <PlusIcon />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
       )}
-      <ImportarFaltantesDialog
-        open={importOpen}
-        onOpenChange={setImportOpen}
-        session={session}
-      />
     </div>
   );
 }

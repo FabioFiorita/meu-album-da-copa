@@ -1,3 +1,6 @@
+// Session is stored in localStorage on purpose: a non-HttpOnly cookie offers no
+// extra protection against XSS (any JS can read it), and the browser cannot set
+// HttpOnly cookies. The writeKey is only ever sent to Convex over HTTPS.
 import type { AlbumTemplateId } from "@convex/lib/templates";
 
 export type AlbumSession = {

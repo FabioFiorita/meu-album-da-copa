@@ -1,15 +1,23 @@
-import { SearchIcon, SettingsIcon, TrophyIcon, FlipHorizontalIcon } from "lucide-react";
+import {
+  ArrowLeftRightIcon,
+  FlipHorizontalIcon,
+  SearchIcon,
+  SettingsIcon,
+  TrophyIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlbumTab } from "./AlbumTab";
 import { BuscaTab } from "./BuscaTab";
 import { ConfigTab } from "./ConfigTab";
 import { RepetidasTab } from "./RepetidasTab";
+import { TrocarTab } from "./TrocarTab";
 import type { AlbumSession } from "@/lib/albumSession";
 
 const tabs = [
   { id: "album", label: "Álbum", Icon: TrophyIcon },
   { id: "dupes", label: "Repetidas", Icon: FlipHorizontalIcon },
+  { id: "trade", label: "Trocar", Icon: ArrowLeftRightIcon },
   { id: "search", label: "Busca+", Icon: SearchIcon },
   { id: "config", label: "Config", Icon: SettingsIcon },
 ] as const;
@@ -46,6 +54,7 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
       <div className="flex-1 overflow-auto px-4 sm:px-6">
         {tab === "album" && <AlbumTab session={session} />}
         {tab === "dupes" && <RepetidasTab session={session} />}
+        {tab === "trade" && <TrocarTab session={session} />}
         {tab === "search" && <BuscaTab session={session} />}
         {tab === "config" && (
           <ConfigTab
@@ -55,13 +64,13 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
           />
         )}
       </div>
-      <div className="sticky bottom-0 z-10 border-t bg-background px-2 pb-[env(safe-area-inset-bottom)] sm:px-4">
-        <TabsList className="grid h-14 w-full grid-cols-4 rounded-none bg-background p-0">
+      <div className="sticky bottom-0 z-10 border-t bg-background px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 sm:px-4">
+        <TabsList className="grid h-16 w-full grid-cols-5 gap-1 rounded-none bg-background p-0">
           {tabs.map(({ id, label, Icon }) => (
             <TabsTrigger
               key={id}
               value={id}
-              className="flex flex-col gap-0.5 rounded-none data-[state=active]:bg-muted"
+              className="flex h-full flex-col items-center justify-center gap-1 rounded-none px-1 py-1 data-[state=active]:bg-muted"
             >
               <Icon className="size-4" />
               <span className="text-[10px] font-medium">{label}</span>
