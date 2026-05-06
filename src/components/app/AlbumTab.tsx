@@ -140,7 +140,7 @@ export function AlbumTab({ session }: Props) {
               </span>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="mx-auto grid w-full max-w-[min(100%,22rem)] grid-cols-7 gap-1.5 pb-3 sm:max-w-sm md:max-w-md lg:max-w-lg">
+              <div className="mx-auto grid w-full max-w-[min(100%,26rem)] grid-cols-7 gap-2 pb-3 sm:max-w-md md:max-w-lg lg:max-w-xl">
                 {sec.stickers.map((st) => {
                   const c = countByKey.get(st.key) ?? 0;
                   const owned = c >= 1;
@@ -151,7 +151,7 @@ export function AlbumTab({ session }: Props) {
                       type="button"
                       onClick={() => setOpenKey(st.key)}
                       className={cn(
-                        "relative flex aspect-[3/4] w-full flex-col items-center justify-center rounded-md border-2 text-[0.65rem] font-semibold leading-none transition-colors sm:text-xs",
+                        "relative flex aspect-[2/3] w-full flex-col items-center rounded-md border-2 px-0.5 py-1 text-[0.65rem] font-semibold leading-none transition-colors sm:text-xs",
                         !owned &&
                           "border-dashed border-muted-foreground/50 bg-muted/30",
                         owned &&
@@ -164,11 +164,13 @@ export function AlbumTab({ session }: Props) {
                       {owned && (
                         <CheckIcon className="absolute right-0.5 top-0.5 size-3 opacity-90" />
                       )}
-                      <span>{st.displayNumber}</span>
+                      <span className="flex min-h-0 w-full flex-1 flex-col items-center justify-center tabular-nums">
+                        {st.displayNumber}
+                      </span>
                       {dup && (
                         <Badge
                           variant="secondary"
-                          className="absolute bottom-0.5 text-[10px] px-1"
+                          className="shrink-0 text-[10px] px-1"
                         >
                           ×{c - 1}
                         </Badge>

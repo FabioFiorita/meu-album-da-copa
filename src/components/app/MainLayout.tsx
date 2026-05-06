@@ -41,11 +41,11 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
     >
       <header className="flex shrink-0 items-center gap-3 border-b bg-background px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
         <img
-          src="/logo.png"
+          src={`${import.meta.env.BASE_URL}logo.png`}
           alt="Meu álbum da Copa"
           width={32}
           height={32}
-          className="size-8 shrink-0 rounded-md object-contain"
+          className="size-8 shrink-0 rounded-md object-cover object-center"
         />
         <span className="truncate text-sm font-semibold tracking-tight">
           Meu álbum da Copa
