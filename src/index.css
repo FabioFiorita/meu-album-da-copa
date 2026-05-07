@@ -166,6 +166,12 @@
     transform: scale(1.015);
   }
 
+  .busca-tab .team-background-forms {
+    filter: blur(1.5px);
+    opacity: 0.86;
+    transform: scale(1.01);
+  }
+
   .country-stickers-panel {
     contain: layout paint;
     max-height: 34rem;
