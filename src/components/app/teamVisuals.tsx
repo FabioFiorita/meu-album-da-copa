@@ -1,4 +1,4 @@
-import { StarIcon, TrophyIcon } from "lucide-react";
+import { TrophyIcon } from "lucide-react";
 import { type CSSProperties, useState } from "react";
 import type { AlbumSectionTemplate } from "@convex/lib/templates";
 
@@ -119,15 +119,45 @@ export function slotStyle(theme: TeamTheme, owned: boolean): ThemeStyle {
   };
 }
 
+export function CocaColaIcon() {
+  return (
+    <svg viewBox="0 0 32 32" className="size-full" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#e41f26" />
+      <path
+        d="M13.1 5.5h5.8v3.2c0 .8.4 1.5.9 2.1 1 1.1 1.7 2.5 1.7 4v9.5c0 1.2-1 2.2-2.2 2.2h-6.6c-1.2 0-2.2-1-2.2-2.2v-9.5c0-1.5.7-2.9 1.7-4 .6-.6.9-1.3.9-2.1z"
+        fill="#ffffff"
+      />
+      <path
+        d="M13.6 5h4.8c.5 0 .9.4.9.9v2.3c0 .5-.4.9-.9.9h-4.8a.9.9 0 0 1-.9-.9V5.9c0-.5.4-.9.9-.9Z"
+        fill="#f7d7d7"
+      />
+      <path
+        d="M10.5 15.1h11v6.6h-11z"
+        fill="#e41f26"
+      />
+      <path
+        d="M12.1 19.3c2.7-2.4 5.3-2.4 7.8-.2"
+        fill="none"
+        stroke="#ffffff"
+        strokeLinecap="round"
+        strokeWidth="1.3"
+      />
+      <text x="16" y="18.2" fill="#fff" fontFamily="Arial, sans-serif" fontSize="4.8" fontWeight="900" textAnchor="middle">
+        cola
+      </text>
+    </svg>
+  );
+}
+
 export function SectionIcon({ section }: { section: AlbumSectionTemplate }) {
   const [failed, setFailed] = useState(false);
 
   if (section.id === "FWC") {
-    return <StarIcon className="size-4 text-[#ffd65c]" fill="currentColor" />;
+    return <TrophyIcon className="size-4 text-[#ffd65c]" />;
   }
 
   if (section.id === "CC") {
-    return <TrophyIcon className="size-4 text-[#d6b45d]" />;
+    return <CocaColaIcon />;
   }
 
   if (failed) {

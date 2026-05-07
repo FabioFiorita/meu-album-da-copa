@@ -6,7 +6,6 @@ import {
   CheckIcon,
   ClipboardIcon,
   SearchIcon,
-  StarIcon,
   TrophyIcon,
 } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
@@ -26,6 +25,7 @@ import { errorMessage } from "@/lib/errors";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
 import { cn } from "@/lib/utils";
 import { TeamBackgroundForms } from "./TeamBackgroundForms";
+import { CocaColaIcon } from "./teamVisuals";
 
 type Props = { session: AlbumSession };
 type SectionTemplate = (typeof WC_2026_TEMPLATE.sections)[number];
@@ -134,11 +134,11 @@ function slotStyle(theme: TeamTheme, owned: boolean): ThemeStyle {
 
 function SectionIcon({ section }: { section: SectionTemplate }) {
   if (section.id === "FWC") {
-    return <StarIcon className="size-4 text-[#ffd65c]" fill="currentColor" />;
+    return <TrophyIcon className="size-4 text-[#ffd65c]" />;
   }
 
   if (section.id === "CC") {
-    return <TrophyIcon className="size-4 text-[#d6b45d]" />;
+    return <CocaColaIcon />;
   }
 
   return (
