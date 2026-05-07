@@ -5,7 +5,7 @@ import {
   SearchIcon,
   ZapIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -66,8 +66,9 @@ export function BuscaTab({ session }: Props) {
         null
       : null;
   const resolvedTheme = getTeamTheme(resolved?.sectionId ?? "");
-  const empty =
-    country.trim().length === 0 && num.trim().length === 0;
+  const previewCountry = (country.toUpperCase() + "---").slice(0, 3);
+  const previewNumber = num || "--";
+  const isComplete = country.trim().length === 3 && num.trim().length > 0;
   const statusLabel = !snapshot
     ? "Sincronizando..."
     : count === 0
@@ -202,14 +203,17 @@ export function BuscaTab({ session }: Props) {
         </div>
       </section>
 
-      {empty ? (
+      {!isComplete ? (
         <section className="relative overflow-hidden rounded-[1.35rem] border-2 border-[#d6b45d]/65 bg-[#171717]/95 p-5 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)]">
           <div className="absolute -right-12 top-4 size-36 rounded-full bg-[#d6b45d]/9 blur-2xl" />
           <div className="relative grid grid-cols-[4.8rem_1fr] items-center gap-4">
-            <div className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-[#d6b45d]/55 bg-[#2b2619] text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]">
-              <span aria-hidden="true" className="sticker-slot-label">
-                <span>---</span>
-                <span>--</span>
+            <div
+              style={{ "--slot-ink": "#111111" } as CSSProperties}
+              className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-[#d6b45d]/55 bg-[#2b2619] text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
+            >
+              <span aria-hidden="true" className="sticker-slot-label text-black">
+                <span>{previewCountry}</span>
+                <span>{previewNumber}</span>
               </span>
             </div>
             <div className="min-w-0">
@@ -234,38 +238,11 @@ export function BuscaTab({ session }: Props) {
       ) : resolved && resolved.key ? (
         <section
           style={sectionStyle(resolvedTheme)}
-          className="team-card relative overflow-hidden rounded-[1.15rem] border-2 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)]"
+          className="team-card relative overflow-hidden rounded-[1.35rem] border-2 p-5 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]"
         >
           <TeamBackgroundForms />
 
-          <div className="relative z-10 flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
-                {resolvedSection ? (
-                  <SectionIcon section={resolvedSection} />
-                ) : (
-                  <span className="text-[9px] font-black leading-none text-[#101010]">
-                    {resolved.sectionId.slice(0, 2)}
-                  </span>
-                )}
-              </div>
-              <div className="min-w-0">
-                <h2 className="country-name-outline truncate text-[18px] font-black leading-tight text-white">
-                  {resolved.key}
-                </h2>
-                {resolvedSection && (
-                  <p className="country-name-outline mt-1 truncate text-[12px] font-bold text-white/82">
-                    {resolvedSection.title}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Badge className="h-7 shrink-0 rounded-full border border-white/30 bg-black/42 px-2.5 text-[12px] font-black text-white shadow-none">
-              {statusLabel}
-            </Badge>
-          </div>
-
-          <div className="relative z-10 mt-4 grid grid-cols-[6.3rem_1fr] items-stretch gap-4">
+          <div className="relative z-10 grid grid-cols-[4.8rem_1fr] items-center gap-4">
             <div
               style={slotStyle(resolvedTheme, count > 0)}
               className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
@@ -276,34 +253,55 @@ export function BuscaTab({ session }: Props) {
               </span>
             </div>
 
-            <div className="flex min-w-0 flex-col justify-end gap-2">
-              <div className="mb-auto rounded-2xl border border-white/18 bg-black/22 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                <p className="country-name-outline text-[11px] font-black uppercase leading-none text-white/70">
-                  No álbum
-                </p>
-                <p className="country-name-outline mt-1 text-[16px] font-black leading-tight text-white">
+            <div className="min-w-0">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
+                    {resolvedSection ? (
+                      <SectionIcon section={resolvedSection} />
+                    ) : (
+                      <span className="text-[9px] font-black leading-none text-[#101010]">
+                        {resolved.sectionId.slice(0, 2)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="country-name-outline truncate text-[17px] font-black leading-tight text-white">
+                      {resolved.key}
+                    </h2>
+                    {resolvedSection && (
+                      <p className="country-name-outline truncate text-[11px] font-bold text-white/82">
+                        {resolvedSection.title}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <Badge className="h-6 shrink-0 rounded-full border border-white/30 bg-black/42 px-2 text-[11px] font-black text-white shadow-none">
                   {statusLabel}
-                </p>
+                </Badge>
               </div>
-              <Button
-                type="button"
-                size="lg"
-                className="h-12 rounded-2xl bg-[linear-gradient(180deg,#16d866,#0fb653)] text-[15px] font-black text-white shadow-[0_8px_22px_rgba(16,190,88,0.24)] hover:bg-[#14c75d]"
-                onClick={() => void runMark("owned")}
-              >
-                <CheckCircle2Icon className="size-5" />
-                Marcar possuída
-              </Button>
-              <Button
-                type="button"
-                size="lg"
-                variant="outline"
-                className="h-12 rounded-2xl border-white/45 bg-black/24 text-[15px] font-black text-white hover:bg-white/12 hover:text-white"
-                onClick={() => void runMark("duplicate")}
-              >
-                <Repeat2Icon className="size-5" />
-                Marcar repetida
-              </Button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-9 rounded-2xl bg-[linear-gradient(180deg,#16d866,#0fb653)] px-2 text-[12px] font-black text-white shadow-[0_8px_22px_rgba(16,190,88,0.24)] hover:bg-[#14c75d]"
+                  onClick={() => void runMark("owned")}
+                >
+                  <CheckCircle2Icon className="size-4" />
+                  Tenho
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-9 rounded-2xl border-white/45 bg-black/24 px-2 text-[12px] font-black text-white hover:bg-white/12 hover:text-white"
+                  onClick={() => void runMark("duplicate")}
+                >
+                  <Repeat2Icon className="size-4" />
+                  Repetida
+                </Button>
+              </div>
             </div>
           </div>
         </section>
