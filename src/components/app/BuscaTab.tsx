@@ -5,7 +5,7 @@ import {
   SearchIcon,
   ZapIcon,
 } from "lucide-react";
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,6 +38,8 @@ export function BuscaTab({ session }: Props) {
   const markQuick = useMutation(api.stickers.markQuick);
   const [country, setCountry] = useState("");
   const [num, setNum] = useState("");
+  const countryInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const numberInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const resolved = useMemo<
     | null
@@ -93,6 +95,26 @@ export function BuscaTab({ session }: Props) {
     }
   }
 
+  function setCountryChar(index: number, value: string) {
+    const padded = (country + "   ").slice(0, 3).split("");
+    padded[index] = value;
+    setCountry(padded.join("").replace(/\s/g, "").slice(0, 3));
+  }
+
+  function setNumberChar(index: number, value: string) {
+    const padded = (num + "  ").slice(0, 2).split("");
+    padded[index] = value;
+    setNum(padded.join("").replace(/\s/g, "").slice(0, 2));
+  }
+
+  function focusCountryInput(index: number) {
+    window.requestAnimationFrame(() => countryInputRefs.current[index]?.focus());
+  }
+
+  function focusNumberInput(index: number) {
+    window.requestAnimationFrame(() => numberInputRefs.current[index]?.focus());
+  }
+
   return (
     <div className="busca-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
       <section className="relative overflow-hidden rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
@@ -145,23 +167,37 @@ export function BuscaTab({ session }: Props) {
                 {COUNTRY_INPUTS.map((i) => (
                   <input
                     key={i}
+                    ref={(el) => {
+                      countryInputRefs.current[i] = el;
+                    }}
                     maxLength={1}
                     aria-label={`Letra ${i + 1} do país`}
                     className={inputCellClass}
                     value={country[i] ?? ""}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Backspace" || country[i]) return;
+                      e.preventDefault();
+                      if (i > 0) {
+                        setCountryChar(i - 1, "");
+                        focusCountryInput(i - 1);
+                        return;
+                      }
+                      if (num.length > 0) setNum("");
+                    }}
                     onChange={(e) => {
                       const ch = e.target.value
                         .toUpperCase()
                         .replace(/[^A-Za-z]/g, "");
+                      const value = ch.slice(-1) || "";
                       const padded = (country + "   ").slice(0, 3).split("");
-                      padded[i] = ch.slice(-1) || "";
+                      padded[i] = value;
                       const next = padded.join("").replace(/\s/g, "").slice(0, 3);
                       setCountry(next);
-                      if (ch && i < 2) {
-                        const el = e.target.parentElement?.children[i + 1] as
-                          | HTMLInputElement
-                          | undefined;
-                        el?.focus();
+                      if (!value) return;
+                      if (i < 2) {
+                        focusCountryInput(i + 1);
+                      } else {
+                        focusNumberInput(0);
                       }
                     }}
                   />
@@ -177,23 +213,33 @@ export function BuscaTab({ session }: Props) {
                 {NUMBER_INPUTS.map((i) => (
                   <input
                     key={i}
+                    ref={(el) => {
+                      numberInputRefs.current[i] = el;
+                    }}
                     maxLength={1}
                     inputMode="numeric"
                     aria-label={`Dígito ${i + 1} do número`}
                     className={inputCellClass}
                     value={num[i] ?? ""}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Backspace" || num[i]) return;
+                      e.preventDefault();
+                      if (i > 0) {
+                        setNumberChar(i - 1, "");
+                        focusNumberInput(i - 1);
+                      } else {
+                        setCountryChar(2, "");
+                        focusCountryInput(2);
+                      }
+                    }}
                     onChange={(e) => {
                       const ch = e.target.value.replace(/\D/g, "");
+                      const value = ch.slice(-1) || "";
                       const padded = (num + "  ").slice(0, 2).split("");
-                      padded[i] = ch.slice(-1) || "";
+                      padded[i] = value;
                       const next = padded.join("").replace(/\s/g, "").slice(0, 2);
                       setNum(next);
-                      if (ch && i < 1) {
-                        const el = e.target.parentElement?.children[i + 1] as
-                          | HTMLInputElement
-                          | undefined;
-                        el?.focus();
-                      }
+                      if (value && i < 1) focusNumberInput(i + 1);
                     }}
                   />
                 ))}
