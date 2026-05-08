@@ -6,7 +6,6 @@ import {
   TrophyIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlbumTab } from "./AlbumTab";
 import { BuscaTab } from "./BuscaTab";
 import { ConfigTab } from "./ConfigTab";
@@ -34,24 +33,25 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
   const [tab, setTab] = useState<TabId>("album");
 
   return (
-    <Tabs
-      value={tab}
-      onValueChange={(v) => setTab(v as TabId)}
-      className="flex min-h-dvh flex-col bg-background"
-    >
-      <header className="flex shrink-0 items-center gap-3 border-b bg-background px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-        <img
-          src={`${import.meta.env.BASE_URL}logo.png`}
-          alt="Meu álbum da Copa"
-          width={32}
-          height={32}
-          className="size-8 shrink-0 rounded-md object-cover object-center"
-        />
-        <span className="truncate text-sm font-semibold tracking-tight">
-          Meu álbum da Copa
-        </span>
+    <div className="flex h-dvh min-h-dvh flex-col overflow-hidden bg-[#050606] text-white">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-[#d6b45d]/20 bg-[#050606]/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur sm:px-6">
+        <div className="mx-auto flex w-full max-w-[430px] items-center gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#d6b45d]/45 bg-[#151515] shadow-[0_0_18px_rgba(214,180,93,0.12)]">
+            <img
+              src={`${import.meta.env.BASE_URL}logo.png`}
+              alt="Meu álbum da Copa"
+              width={28}
+              height={28}
+              className="size-7 rounded-lg object-cover object-center"
+            />
+          </span>
+          <span className="truncate text-[15px] font-black leading-none tracking-normal text-white">
+            Meu álbum da Copa
+          </span>
+        </div>
       </header>
-      <div className="flex-1 overflow-auto px-4 sm:px-6">
+
+      <div className="min-h-0 flex-1 overflow-auto px-4 sm:px-6">
         {tab === "album" && <AlbumTab session={session} />}
         {tab === "dupes" && <RepetidasTab session={session} />}
         {tab === "trade" && <TrocarTab session={session} />}
@@ -64,20 +64,32 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
           />
         )}
       </div>
-      <div className="sticky bottom-0 z-10 border-t bg-background px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 sm:px-4">
-        <TabsList className="grid h-16 w-full grid-cols-5 gap-1 rounded-none bg-background p-0">
+
+      <footer className="z-20 shrink-0 border-t border-[#d6b45d]/25 bg-[#050606]/95 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:px-4">
+        <nav
+          aria-label="Navegação principal"
+          className="mx-auto grid h-[62px] w-full max-w-[430px] shrink-0 grid-cols-5 rounded-2xl border border-[#d6b45d]/35 bg-[#151515]/95 p-1 shadow-[0_-12px_36px_rgba(0,0,0,0.42)]"
+        >
           {tabs.map(({ id, label, Icon }) => (
-            <TabsTrigger
+            <button
               key={id}
-              value={id}
-              className="flex h-full flex-col items-center justify-center gap-1 rounded-none px-1 py-1 data-[state=active]:bg-muted"
+              type="button"
+              aria-current={tab === id ? "page" : undefined}
+              onClick={() => setTab(id)}
+              className={`flex h-[52px] min-w-0 items-center justify-center rounded-xl px-1 py-1 text-[#d8d8d8]/70 transition-colors ${
+                tab === id
+                  ? "border border-[#d6b45d]/45 bg-[linear-gradient(180deg,rgba(19,174,91,0.34),rgba(16,16,16,0.45))] text-[#35e66f]"
+                  : "border border-transparent"
+              }`}
             >
-              <Icon className="size-4" />
-              <span className="text-[10px] font-medium">{label}</span>
-            </TabsTrigger>
+              <span className="flex h-full flex-col items-center justify-center gap-1">
+                <Icon className="size-[18px]" />
+                <span className="text-[10px] font-black leading-none tracking-normal">{label}</span>
+              </span>
+            </button>
           ))}
-        </TabsList>
-      </div>
-    </Tabs>
+        </nav>
+      </footer>
+    </div>
   );
 }

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1999" viewBox="0 0 2048 1999" role="img" aria-label="Fundo abstrato verde, laranja, amarelo e azul">
+  <defs>
+    <linearGradient id="orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f79a00"/>
+      <stop offset="1" stop-color="#ef8f00"/>
+    </linearGradient>
+
+    <radialGradient id="green" cx="52%" cy="52%" r="80%">
+      <stop offset="0" stop-color="#2c8b40"/>
+      <stop offset="0.55" stop-color="#28883f"/>
+      <stop offset="1" stop-color="#18803a"/>
+    </radialGradient>
+
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c7ce00"/>
+      <stop offset="1" stop-color="#d4d600"/>
+    </linearGradient>
+
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2637c8"/>
+      <stop offset="1" stop-color="#221aa8"/>
+    </linearGradient>
+
+    <linearGradient id="lime" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9df00"/>
+      <stop offset="1" stop-color="#c8d900"/>
+    </linearGradient>
+
+    <filter id="softTexture" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="12" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+      <feComponentTransfer in="mono" result="grain">
+        <feFuncA type="table" tableValues="0 0.03"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="grain" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softTexture)">
+    <!-- Base verde -->
+    <rect width="2048" height="1999" fill="url(#green)"/>
+
+    <!-- Faixa laranja superior -->
+    <path fill="url(#orange)" d="
+      M 0 0
+      H 1808
+      C 1828 96 1841 210 1848 316
+      C 1698 323 1495 324 1268 319
+      C 1030 314 835 283 610 275
+      C 395 267 210 284 0 326
+      Z"/>
+
+    <!-- Verde-limão no canto superior direito -->
+    <path fill="url(#lime)" d="
+      M 1808 0
+      H 2048
+      V 300
+      C 1982 306 1915 311 1848 316
+      C 1841 210 1828 96 1808 0
+      Z"/>
+
+    <!-- Forma amarela inferior -->
+    <path fill="url(#yellow)" d="
+      M 0 1999
+      V 1842
+      C 0 1700 70 1580 185 1534
+      C 295 1490 430 1478 625 1477
+      H 1160
+      C 1320 1477 1410 1507 1435 1597
+      C 1450 1648 1435 1711 1390 1780
+      C 1335 1873 1335 1950 1375 1999
+      Z"/>
+
+    <!-- Forma azul da direita -->
+    <path fill="url(#blue)" d="
+      M 1848 316
+      C 1870 565 1864 796 1833 987
+      C 1799 1196 1722 1340 1580 1458
+      C 1498 1526 1390 1578 1341 1675
+      C 1289 1778 1290 1918 1370 1999
+      H 2048
+      V 300
+      C 1982 306 1915 311 1848 316
+      Z"/>
+  </g>
+</svg>
