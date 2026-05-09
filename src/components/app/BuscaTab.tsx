@@ -35,7 +35,7 @@ const NUMBER_INPUTS = [
   { index: 1, id: "sticker-number-2" },
 ] as const;
 const inputCellClass =
-  "h-14 min-w-0 rounded-2xl border-2 border-[#d6b45d]/65 bg-black/28 text-center text-[21px] font-black uppercase leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.18)] outline-none transition-colors placeholder:text-white/28 focus:border-[#f4d77c] focus:bg-black/38 focus:ring-2 focus:ring-[#d6b45d]/25";
+  "quick-code-input h-14 min-w-0 rounded-2xl border-2 border-[#d6b45d]/65 bg-black/28 text-center text-[21px] font-black uppercase leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.18)] outline-none transition-colors placeholder:text-white/28 focus:border-[#f4d77c] focus:bg-black/38 focus:ring-2 focus:ring-[#d6b45d]/25";
 
 export function BuscaTab({ session }: Props) {
   const snapshot = useQuery(api.albums.getPrivateSnapshot, {
@@ -190,7 +190,7 @@ export function BuscaTab({ session }: Props) {
           </div>
         </div>
 
-        <div className="relative mt-5 rounded-[1.15rem] border border-white/10 bg-black/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+        <div className="quick-code-panel relative mt-5 rounded-[1.15rem] border border-white/10 bg-black/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
           <div className="grid grid-cols-[1fr_auto] gap-3">
             <fieldset className="min-w-0">
               <legend className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">

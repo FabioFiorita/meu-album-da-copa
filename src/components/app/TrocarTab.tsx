@@ -388,11 +388,11 @@ function SectionBlock({
           )}
         </span>
         <span className="flex min-w-0 flex-1 items-baseline gap-2">
-          <span className="country-name-outline text-[15px] font-black leading-none tracking-normal text-white">
+          <span className="trade-team-label country-name-outline text-[15px] font-black leading-none tracking-normal text-white">
             {sectionId}
           </span>
           {title !== sectionId && (
-            <span className="country-name-outline hidden truncate text-[11px] font-bold leading-none text-white/78 min-[380px]:inline">
+            <span className="trade-team-label country-name-outline hidden truncate text-[11px] font-bold leading-none text-white/78 min-[380px]:inline">
               {title}
             </span>
           )}

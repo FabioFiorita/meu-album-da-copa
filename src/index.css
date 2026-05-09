@@ -330,6 +330,36 @@
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
   }
 
+  .app-shell[data-theme="light"] .album-remove-mode-message {
+    color: #211a10 !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-panel {
+    background-color: rgba(255, 250, 238, 0.58) !important;
+    border-color: rgba(156, 106, 19, 0.22) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.62),
+      0 8px 20px rgba(111, 71, 7, 0.08) !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-input {
+    background-color: rgba(255, 255, 255, 0.62) !important;
+    border-color: rgba(156, 106, 19, 0.56) !important;
+    color: #211a10 !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 7px 16px rgba(111, 71, 7, 0.14) !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-input:focus {
+    background-color: rgba(255, 255, 255, 0.78) !important;
+    border-color: rgba(111, 71, 7, 0.72) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 0 0 2px rgba(156, 106, 19, 0.2),
+      0 8px 18px rgba(111, 71, 7, 0.14) !important;
+  }
+
   .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#d6b45d]"],
   .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#f4d77c]"],
   .app-shell[data-theme="light"] .trocar-tab [class*="text-[#d6b45d]"],
@@ -355,6 +385,14 @@
     text-shadow:
       0 1px 2px rgba(255, 255, 255, 0.5),
       0 0 2px rgba(0, 0, 0, 0.28);
+  }
+
+  .app-shell[data-theme="light"] .trocar-tab .trade-team-label {
+    -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.78);
+    color: #ffffff !important;
+    text-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.92),
+      0 0 3px rgba(0, 0, 0, 0.8);
   }
 
   .country-name-outline {
