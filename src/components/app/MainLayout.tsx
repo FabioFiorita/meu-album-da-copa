@@ -91,7 +91,7 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
         )}
       </div>
 
-      <footer className="relative z-30 shrink-0 border-t border-[var(--app-border-soft)] bg-[var(--app-chrome)] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:px-4">
+      <footer className="app-footer relative z-30 shrink-0 border-t border-[var(--app-border-soft)] bg-[var(--app-chrome)] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:px-4">
         <nav
           aria-label="Navegação principal"
           className="mx-auto grid h-[62px] w-full max-w-[430px] shrink-0 grid-cols-5 rounded-2xl border border-[var(--app-border)] bg-[var(--app-nav-bg)] p-1 shadow-[0_-12px_36px_rgba(0,0,0,0.24)]"
