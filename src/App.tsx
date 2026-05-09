@@ -46,20 +46,20 @@ export default function App() {
           if (!o) setWelcomeCode(null);
         }}
       >
-        <AlertDialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto bg-[#1f1f1f] text-white ring-[#d5b15e]/70">
+        <AlertDialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto border-[var(--app-border)] bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border)]">
           <AlertDialogHeader>
             <AlertDialogTitle>Guarde este código</AlertDialogTitle>
-            <AlertDialogDescription className="flex flex-col gap-4 text-white/72">
+            <AlertDialogDescription className="flex flex-col gap-4 text-[var(--app-muted-text)]">
               <span>
                 Sem o código abaixo não é possível recuperar o álbum. Quem
                 possuir o código completo poderá editar suas figurinhas.
               </span>
-              <code className="break-all rounded-md border border-[#d5b15e]/35 bg-black/35 px-2 py-2 text-sm text-white">
+              <code className="break-all rounded-md border border-[var(--app-border)] bg-[var(--app-field-bg)] px-2 py-2 text-sm text-[var(--app-dialog-text)]">
                 {welcomeCode}
               </code>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col gap-2 border-[#d5b15e]/20 bg-black/18 sm:flex-row">
+          <AlertDialogFooter className="flex flex-col gap-2 border-[var(--app-border-soft)] bg-transparent sm:flex-row">
             <AlertDialogCancel>Fechar</AlertDialogCancel>
             <AlertDialogAction
               type="button"

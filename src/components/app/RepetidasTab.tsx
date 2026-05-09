@@ -70,8 +70,9 @@ export function RepetidasTab({ session }: Props) {
   const closeTimers = useRef<Record<string, number>>({});
 
   useEffect(() => {
+    const timers = closeTimers.current;
     return () => {
-      Object.values(closeTimers.current).forEach(window.clearTimeout);
+      Object.values(timers).forEach(window.clearTimeout);
     };
   }, []);
 

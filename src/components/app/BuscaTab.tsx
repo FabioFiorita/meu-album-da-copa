@@ -5,7 +5,7 @@ import {
   SearchIcon,
   ZapIcon,
 } from "lucide-react";
-import { type CSSProperties, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import {
   SectionIcon,
   sectionStyle,
   slotStyle,
+  type ThemeStyle,
 } from "./teamVisuals";
 
 type Props = { session: AlbumSession };
@@ -88,12 +89,12 @@ export function BuscaTab({ session }: Props) {
   const placeholderCardStyle = previewSection
     ? sectionStyle(previewTheme)
     : undefined;
-  const placeholderSlotStyle = previewSection
+  const placeholderSlotStyle: ThemeStyle = previewSection
     ? ({
         ...slotStyle(previewTheme, false),
         "--slot-ink": "#111111",
-      } as CSSProperties)
-    : ({ "--slot-ink": "#111111" } as CSSProperties);
+      })
+    : { "--slot-ink": "#111111" };
   const statusLabel = !snapshot
     ? "Sincronizando..."
     : count === 0
@@ -108,8 +109,8 @@ export function BuscaTab({ session }: Props) {
       await markQuick({
         code: session.code,
         writeKey: session.writeKey,
-        sectionId: resolved.sectionId!,
-        number: resolved.number!,
+        sectionId: resolved.sectionId,
+        number: resolved.number,
         mode,
       });
       toast.success(mode === "owned" ? "Possuída." : "Repetida ajustada.");

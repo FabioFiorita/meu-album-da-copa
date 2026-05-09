@@ -1,5 +1,16 @@
 import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import {
+  CopyIcon,
+  KeyRoundIcon,
+  LogOutIcon,
+  MoonIcon,
+  PaletteIcon,
+  ShieldCheckIcon,
+  SunIcon,
+  Trash2Icon,
+  type LucideIcon,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -13,7 +24,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -23,16 +33,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import type { AlbumSession } from "@/lib/albumSession";
+import type { AppTheme } from "@/lib/appTheme";
 import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 
 type Props = {
   session: AlbumSession;
   leaveLocal: () => void;
-  updateSessionKeys: (code: string, writeKey: string, fullAccessCode: string) => void;
+  updateSessionKeys: (
+    code: string,
+    writeKey: string,
+    fullAccessCode: string,
+  ) => void;
+  theme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
 };
 
-export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
+const themeOptions = [
+  { value: "dark", label: "Escuro", Icon: MoonIcon },
+  { value: "light", label: "Claro", Icon: SunIcon },
+] satisfies Array<{ value: AppTheme; label: string; Icon: LucideIcon }>;
+
+const cardClass =
+  "rounded-[1.35rem] border-2 border-[var(--app-border)] bg-[var(--app-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]";
+
+const mutedText = "text-[var(--app-muted-text)]";
+
+const outlineButton =
+  "rounded-2xl border-[var(--app-border)] bg-[var(--app-button-muted)] text-[var(--app-gold)] hover:bg-[var(--app-button-muted-hover)] hover:text-[var(--app-gold-strong)]";
+
+export function ConfigTab({
+  session,
+  leaveLocal,
+  updateSessionKeys,
+  theme,
+  setTheme,
+}: Props) {
   const snapshot = useQuery(api.albums.getPrivateSnapshot, {
     code: session.code,
     writeKey: session.writeKey,
@@ -105,13 +142,52 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-28 pt-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Identidade</CardTitle>
-          <CardDescription>Nome exibido no álbum.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-4 pt-4">
+      <section className={cardClass}>
+        <div className="flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-strong)] text-[var(--app-gold)]">
+            <PaletteIcon className="size-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[18px] font-black leading-tight tracking-normal">
+              Aparência
+            </h1>
+            <p className={cn("mt-1 text-[12px] font-semibold", mutedText)}>
+              Escolha como o álbum aparece neste aparelho.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 inline-grid w-fit grid-cols-2 gap-1 rounded-2xl border border-[var(--app-border-soft)] bg-[var(--app-segment-bg)] p-1">
+          {themeOptions.map(({ value, label, Icon }) => {
+            const selected = theme === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setTheme(value)}
+                className={cn(
+                  "flex h-9 min-w-[6.5rem] items-center justify-center gap-1.5 rounded-xl border px-3 text-[12px] font-black transition-colors",
+                  selected
+                    ? "border-[var(--app-nav-active-border)] bg-[var(--app-nav-active)] text-[var(--app-nav-active-text)]"
+                    : "border-transparent text-[var(--app-muted-text)] hover:bg-[var(--app-button-muted)] hover:text-[var(--app-text)]",
+                )}
+              >
+                <Icon className="size-3.5" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <SectionHeader
+          title="Identidade"
+          description="Nome exibido no álbum."
+        />
+        <div className="mt-4 flex flex-col gap-3">
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="album-name">Nome</FieldLabel>
@@ -119,25 +195,33 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
                 id="album-name"
                 value={nameValue}
                 onChange={(e) => setNameDraft(e.target.value)}
+                className="h-11 rounded-2xl border-[var(--app-border)] bg-[var(--app-field-bg)] text-[var(--app-text)] placeholder:text-[var(--app-muted-text)]"
               />
             </Field>
           </FieldGroup>
-          <Button type="button" onClick={() => void saveName()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void saveName()}
+            className={cn("h-11 w-full text-sm font-black", outlineButton)}
+          >
             Salvar nome
           </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Compartilhamento</CardTitle>
-          <CardDescription>Códigos e comparação pública.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-4">
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <SectionHeader
+          title="Compartilhamento"
+          description="Códigos e comparação pública."
+          Icon={ShieldCheckIcon}
+        />
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--app-border-soft)] bg-[var(--app-field-bg)] p-3">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">Comparação pública</span>
-              <FieldDescription>
-                Permite que outros comparem faltantes com o código público.
+              <span className="text-sm font-black">Comparação pública</span>
+              <FieldDescription className={mutedText}>
+                Permite comparar faltantes com o código público.
               </FieldDescription>
             </div>
             <Switch
@@ -146,70 +230,166 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
               disabled={snapshot === undefined}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <p className="font-mono text-sm">{session.code}</p>
-            <div className="flex flex-wrap gap-2">
+
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--app-border-soft)] bg-[var(--app-field-bg)] p-3">
+            <p className="break-all font-mono text-[12px] font-bold text-[var(--app-text)]">
+              {session.code}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className={outlineButton}
                 onClick={() =>
                   void copyText(session.code)
                     .then(() => toast.success("Código público copiado."))
                     .catch((e) => toast.error(errorMessage(e)))
                 }
               >
-                Copiar código público
+                <CopyIcon className="size-4" />
+                Público
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className={outlineButton}
                 onClick={() => setShareFullOpen(true)}
               >
-                Copiar código completo
+                <CopyIcon className="size-4" />
+                Completo
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Segurança</CardTitle>
-        </CardHeader>
-        <CardContent>
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <SectionHeader title="Segurança" Icon={KeyRoundIcon} />
+        <div className="mt-4">
           <Button
             type="button"
             variant="outline"
+            className={outlineButton}
             onClick={() => setRotateOpen(true)}
           >
+            <KeyRoundIcon className="size-4" />
             Rotacionar chave de edição
           </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Este dispositivo</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button type="button" variant="outline" onClick={() => leaveLocal()}>
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <SectionHeader title="Este dispositivo" Icon={LogOutIcon} />
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className={outlineButton}
+            onClick={() => leaveLocal()}
+          >
+            <LogOutIcon className="size-4" />
             Sair deste álbum aqui
           </Button>
-        </CardContent>
-      </Card>
-      <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle>Zona de perigo</CardTitle>
-          <CardDescription>Apaga todas as figurinhas marcadas.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button type="button" variant="destructive" onClick={() => setResetOpen(true)}>
+        </div>
+      </section>
+
+      <section className="rounded-[1.35rem] border-2 border-red-500/45 bg-[var(--app-danger-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.18)]">
+        <SectionHeader
+          title="Zona de perigo"
+          description="Apaga todas as figurinhas marcadas."
+          Icon={Trash2Icon}
+        />
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="destructive"
+            className="rounded-2xl font-black"
+            onClick={() => setResetOpen(true)}
+          >
+            <Trash2Icon className="size-4" />
             Resetar álbum
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+
+      <ConfirmDialogs
+        rotateOpen={rotateOpen}
+        setRotateOpen={setRotateOpen}
+        doRotate={doRotate}
+        newKeysOpen={newKeysOpen}
+        setNewKeysOpen={setNewKeysOpen}
+        resetOpen={resetOpen}
+        setResetOpen={setResetOpen}
+        doReset={doReset}
+        shareFullOpen={shareFullOpen}
+        setShareFullOpen={setShareFullOpen}
+        fullAccessCode={session.fullAccessCode}
+      />
+    </div>
+  );
+}
+
+function SectionHeader({
+  title,
+  description,
+  Icon,
+}: {
+  title: string;
+  description?: string;
+  Icon?: LucideIcon;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      {Icon && (
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-strong)] text-[var(--app-gold)]">
+          <Icon className="size-5" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[16px] font-black leading-tight tracking-normal">
+          {title}
+        </h2>
+        {description && (
+          <p className={cn("mt-1 text-[12px] font-semibold", mutedText)}>
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConfirmDialogs({
+  rotateOpen,
+  setRotateOpen,
+  doRotate,
+  newKeysOpen,
+  setNewKeysOpen,
+  resetOpen,
+  setResetOpen,
+  doReset,
+  shareFullOpen,
+  setShareFullOpen,
+  fullAccessCode,
+}: {
+  rotateOpen: boolean;
+  setRotateOpen: (open: boolean) => void;
+  doRotate: () => Promise<void>;
+  newKeysOpen: string | null;
+  setNewKeysOpen: (code: string | null) => void;
+  resetOpen: boolean;
+  setResetOpen: (open: boolean) => void;
+  doReset: () => Promise<void>;
+  shareFullOpen: boolean;
+  setShareFullOpen: (open: boolean) => void;
+  fullAccessCode: string;
+}) {
+  return (
+    <>
       <AlertDialog open={rotateOpen} onOpenChange={setRotateOpen}>
-        <AlertDialogContent>
+        <ThemedAlertContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Rotacionar chave?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -223,10 +403,14 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
               Continuar
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </ThemedAlertContent>
       </AlertDialog>
-      <AlertDialog open={!!newKeysOpen} onOpenChange={() => setNewKeysOpen(null)}>
-        <AlertDialogContent>
+
+      <AlertDialog
+        open={!!newKeysOpen}
+        onOpenChange={() => setNewKeysOpen(null)}
+      >
+        <ThemedAlertContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Novo código completo</AlertDialogTitle>
             <AlertDialogDescription className="break-all font-mono">
@@ -247,10 +431,11 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
               Copiar
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </ThemedAlertContent>
       </AlertDialog>
+
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
-        <AlertDialogContent>
+        <ThemedAlertContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Resetar todo o álbum?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -263,15 +448,16 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
               Resetar
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </ThemedAlertContent>
       </AlertDialog>
+
       <AlertDialog open={shareFullOpen} onOpenChange={setShareFullOpen}>
-        <AlertDialogContent>
+        <ThemedAlertContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Código completo</AlertDialogTitle>
             <AlertDialogDescription>
-              Quem tiver este código pode editar seu álbum. Copie só para pessoas
-              de confiança.
+              Quem tiver este código pode editar seu álbum. Copie só para
+              pessoas de confiança.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -279,7 +465,7 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
             <AlertDialogAction
               type="button"
               onClick={() =>
-                void copyText(session.fullAccessCode)
+                void copyText(fullAccessCode)
                   .then(() => {
                     toast.success("Copiado.");
                     setShareFullOpen(false);
@@ -290,8 +476,16 @@ export function ConfigTab({ session, leaveLocal, updateSessionKeys }: Props) {
               Copiar
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </ThemedAlertContent>
       </AlertDialog>
-    </div>
+    </>
+  );
+}
+
+function ThemedAlertContent({ children }: { children: ReactNode }) {
+  return (
+    <AlertDialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto border-[var(--app-border)] bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border)]">
+      {children}
+    </AlertDialogContent>
   );
 }

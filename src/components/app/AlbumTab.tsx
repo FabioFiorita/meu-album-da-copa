@@ -311,13 +311,13 @@ function SectionDetail({
             </Badge>
           </div>
 
-          <div className="rounded-[1.15rem] border border-white/16 bg-[#171717]/90 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
+          <div className="album-detail-stats rounded-[1.15rem] border border-white/16 bg-[#171717]/90 p-3 shadow-[0_10px_28px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur">
             <div className="grid grid-cols-[1.15fr_0.75fr_0.75fr_0.75fr] items-stretch gap-3">
               <div className="border-r border-white/14 pr-3">
-                <p className="text-[10px] font-black leading-none text-white/60">
+                <p className="album-detail-stat-label text-[10px] font-black leading-none text-white/60">
                   Progresso
                 </p>
-                <p className="mt-2 text-[12px] font-black leading-none text-white tabular-nums">
+                <p className="album-detail-stat-value mt-2 text-[12px] font-black leading-none text-white tabular-nums">
                   {progress}%
                 </p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full border border-[#d6b45d]/35 bg-black/48">
@@ -379,10 +379,10 @@ function SectionDetail({
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-0 text-center">
-      <p className="truncate text-[10px] font-black leading-none text-white/58">
+      <p className="album-detail-stat-label truncate text-[10px] font-black leading-none text-white/58">
         {label}
       </p>
-      <p className="mt-3 text-[17px] font-black leading-none text-[#f4d77c] tabular-nums">
+      <p className="album-detail-stat-value mt-3 text-[17px] font-black leading-none text-[#f4d77c] tabular-nums">
         {value}
       </p>
     </div>

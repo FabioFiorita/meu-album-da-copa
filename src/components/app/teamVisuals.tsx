@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- This module intentionally shares team visual helpers with SectionIcon. */
 import { TrophyIcon } from "lucide-react";
 import { type CSSProperties, useState } from "react";
 import type { AlbumSectionTemplate } from "@convex/lib/templates";
