@@ -237,7 +237,7 @@
   .app-footer::after {
     background: var(--app-chrome);
     content: "";
-    height: max(2.5rem, env(safe-area-inset-bottom));
+    height: env(safe-area-inset-bottom, 0px);
     inset-inline: 0;
     pointer-events: none;
     position: absolute;
