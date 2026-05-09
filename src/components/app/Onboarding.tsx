@@ -34,6 +34,8 @@ type Props = {
   onSessionOpened: () => void;
 };
 
+const CREATE_ALBUM_TIMEOUT_MS = 15000;
+
 function SoccerBallIcon() {
   return (
     <svg viewBox="0 0 32 32" className="size-6" aria-hidden="true">
@@ -63,7 +65,12 @@ function ClipboardBadgeIcon() {
         strokeWidth="3"
         strokeLinejoin="round"
       />
-      <path d="M12.5 15h7M12.5 20h7M12.5 25h4" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+      <path
+        d="M12.5 15h7M12.5 20h7M12.5 25h4"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -78,10 +85,33 @@ export function Onboarding({
   const [openEnter, setOpenEnter] = useState(false);
   const [pasteValue, setPasteValue] = useState("");
 
+  function withCreateTimeout<T>(promise: Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        reject(
+          new Error(
+            "Não foi possível conectar ao servidor. Confira se o backend está acessível neste celular.",
+          ),
+        );
+      }, CREATE_ALBUM_TIMEOUT_MS);
+
+      promise.then(
+        (value) => {
+          window.clearTimeout(timeoutId);
+          resolve(value);
+        },
+        (error: unknown) => {
+          window.clearTimeout(timeoutId);
+          reject(error instanceof Error ? error : new Error(String(error)));
+        },
+      );
+    });
+  }
+
   async function handleCreate() {
     setCreating(true);
     try {
-      const r = await createAlbum({ templateId: "wc2026" });
+      const r = await withCreateTimeout(createAlbum({ templateId: "wc2026" }));
       saveSession({
         templateId: "wc2026",
         code: r.code,
@@ -110,19 +140,19 @@ export function Onboarding({
   }
 
   return (
-    <div className="h-dvh overflow-hidden bg-black text-white">
+    <div className="min-h-svh overflow-y-auto bg-black text-white">
       <div
-        className="relative mx-auto flex h-dvh max-w-[430px] flex-col overflow-hidden bg-[#141414] bg-no-repeat shadow-2xl"
+        className="relative mx-auto flex min-h-svh max-w-[430px] flex-col bg-[#141414] bg-no-repeat shadow-2xl"
         style={{
           backgroundImage: "url('/onboarding-copa-2026-background.png')",
           backgroundPosition: "top center",
-          backgroundSize: "100% 100%",
+          backgroundSize: "cover",
         }}
       >
-        <main className="relative z-10 flex flex-1 flex-col px-6 pb-4 pt-[clamp(8.4rem,19.7dvh,16rem)]">
+        <main className="relative z-10 flex flex-1 flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[clamp(7.1rem,17svh,12.5rem)] min-[390px]:px-6">
           <section className="text-center">
             <h1
-              className="font-['Arial_Rounded_MT_Bold','Trebuchet_MS',sans-serif] text-[clamp(2.18rem,4.35dvh,2.42rem)] leading-none font-black tracking-normal text-[#FFF7E8]"
+              className="font-['Arial_Rounded_MT_Bold','Trebuchet_MS',sans-serif] text-[clamp(2rem,4.1svh,2.38rem)] leading-none font-black tracking-normal text-[#FFF7E8]"
               style={{
                 WebkitTextStroke: "1px #815A21",
                 textShadow:
@@ -131,18 +161,18 @@ export function Onboarding({
             >
               Meu álbum da Copa
             </h1>
-            <p className="mx-auto mt-4 max-w-[22rem] text-[clamp(1rem,2.15dvh,1.15rem)] leading-tight text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+            <p className="mx-auto mt-3 max-w-[22rem] text-[clamp(0.95rem,2svh,1.12rem)] leading-tight text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
               Guarde o código completo em local seguro.
               <br />
               Sem ele não há recuperação.
             </p>
           </section>
 
-          <section className="mt-[clamp(1.4rem,3.4dvh,2.1rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1.05rem,2.35dvh,1.35rem)] py-[clamp(1.15rem,2.6dvh,1.5rem)] text-center shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.75rem,3.6dvh,2rem)] leading-none font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+          <section className="mt-[clamp(1.1rem,2.6svh,1.7rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1rem,2.1svh,1.3rem)] py-[clamp(1rem,2.2svh,1.35rem)] text-center shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
+            <h2 className="text-[clamp(1.55rem,3.25svh,1.95rem)] leading-none font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
               Criar álbum novo
             </h2>
-            <p className="mx-auto mt-4 max-w-[20.5rem] text-[clamp(1rem,2.2dvh,1.18rem)] leading-tight text-white">
+            <p className="mx-auto mt-3 max-w-[20.5rem] text-[clamp(0.94rem,1.95svh,1.1rem)] leading-tight text-white">
               Gera um código público e uma chave de edição. Quem tiver o código
               completo pode editar o álbum.
             </p>
@@ -150,20 +180,20 @@ export function Onboarding({
               type="button"
               disabled={creating}
               onClick={() => void handleCreate()}
-              className="mt-6 h-[clamp(3.25rem,6.1dvh,3.65rem)] w-full rounded-[0.95rem] border-0 bg-gradient-to-b from-[#13D84D] to-[#06A836] text-[clamp(1.35rem,2.7dvh,1.55rem)] font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_8px_16px_rgba(0,0,0,.35)] hover:from-[#13D84D] hover:to-[#06A836]"
+              className="mt-5 h-[clamp(3rem,5.4svh,3.55rem)] w-full rounded-[0.95rem] border-0 bg-gradient-to-b from-[#13D84D] to-[#06A836] text-[clamp(1.18rem,2.45svh,1.48rem)] font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_8px_16px_rgba(0,0,0,.35)] hover:from-[#13D84D] hover:to-[#06A836]"
             >
               <SoccerBallIcon />
               {creating ? "Criando..." : "Criar álbum"}
             </Button>
           </section>
 
-          <section className="mt-[clamp(1rem,2.45dvh,1.45rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1.25rem,3dvh,1.65rem)] py-[clamp(1.15rem,2.45dvh,1.45rem)] shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.68rem,3.35dvh,1.9rem)] leading-tight font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+          <section className="mt-[clamp(0.85rem,2svh,1.25rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1.05rem,2.5svh,1.55rem)] py-[clamp(1rem,2.15svh,1.35rem)] shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
+            <h2 className="text-[clamp(1.45rem,3svh,1.85rem)] leading-tight font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
               Entrar com código
               <br />
               completo
             </h2>
-            <p className="mt-4 text-center text-[clamp(0.96rem,2dvh,1.06rem)] leading-tight text-white">
+            <p className="mt-3 text-center text-[clamp(0.9rem,1.82svh,1.03rem)] leading-tight text-white">
               Cole o código FIGUS_ALBUM_V1 que você já salvou.
             </p>
 
@@ -173,7 +203,7 @@ export function Onboarding({
                   <Button
                     type="button"
                     variant="outline"
-                    className="mt-6 h-[clamp(3rem,5.7dvh,3.35rem)] w-full rounded-[0.95rem] border-[3px] border-[#D5B15E] bg-[#2A2A2A] text-[clamp(1.05rem,2.35dvh,1.28rem)] font-black text-[#D5B15E] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] hover:bg-[#303030] hover:text-[#D5B15E]"
+                    className="mt-5 h-[clamp(2.85rem,5.2svh,3.25rem)] w-full rounded-[0.95rem] border-[3px] border-[#D5B15E] bg-[#2A2A2A] text-[clamp(0.98rem,2.08svh,1.2rem)] font-black text-[#D5B15E] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] hover:bg-[#303030] hover:text-[#D5B15E]"
                   />
                 }
               >

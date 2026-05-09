@@ -33,8 +33,8 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
   const [tab, setTab] = useState<TabId>("album");
 
   return (
-    <div className="flex h-dvh min-h-dvh flex-col overflow-hidden bg-[#050606] text-white">
-      <header className="sticky top-0 z-20 shrink-0 border-b border-[#d6b45d]/20 bg-[#050606]/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur sm:px-6">
+    <div className="app-shell relative isolate flex h-dvh min-h-dvh flex-col overflow-hidden bg-[#050606] text-white">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-[#d6b45d]/20 bg-[#050606]/92 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur sm:px-6">
         <div className="mx-auto flex w-full max-w-[430px] items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#d6b45d]/45 bg-[#151515] shadow-[0_0_18px_rgba(214,180,93,0.12)]">
             <img
@@ -51,7 +51,7 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-auto px-4 sm:px-6">
+      <div className="relative z-10 min-h-0 flex-1 overflow-auto px-4 sm:px-6">
         {tab === "album" && <AlbumTab session={session} />}
         {tab === "dupes" && <RepetidasTab session={session} />}
         {tab === "trade" && <TrocarTab session={session} />}
@@ -65,7 +65,7 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
         )}
       </div>
 
-      <footer className="z-20 shrink-0 border-t border-[#d6b45d]/25 bg-[#050606]/95 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:px-4">
+      <footer className="relative z-30 shrink-0 border-t border-[#d6b45d]/25 bg-[#050606]/92 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur sm:px-4">
         <nav
           aria-label="Navegação principal"
           className="mx-auto grid h-[62px] w-full max-w-[430px] shrink-0 grid-cols-5 rounded-2xl border border-[#d6b45d]/35 bg-[#151515]/95 p-1 shadow-[0_-12px_36px_rgba(0,0,0,0.42)]"
