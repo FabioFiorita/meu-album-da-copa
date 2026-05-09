@@ -19,6 +19,7 @@ import {
   saveAppTheme,
 } from "@/lib/appTheme";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const tabs = [
   { id: "album", label: "Álbum", Icon: TrophyIcon },
@@ -75,21 +76,23 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
         </div>
       </header>
 
-      <div className="relative z-10 min-h-0 flex-1 overflow-auto px-4 sm:px-6">
-        {tab === "album" && <AlbumTab session={session} />}
-        {tab === "dupes" && <RepetidasTab session={session} />}
-        {tab === "trade" && <TrocarTab session={session} />}
-        {tab === "search" && <BuscaTab session={session} />}
-        {tab === "config" && (
-          <ConfigTab
-            session={session}
-            leaveLocal={leaveLocal}
-            updateSessionKeys={updateSessionKeys}
-            theme={theme}
-            setTheme={setTheme}
-          />
-        )}
-      </div>
+      <ScrollArea className="app-main-scroll-area relative z-10 min-h-0 flex-1">
+        <main className="px-4 sm:px-6">
+          {tab === "album" && <AlbumTab session={session} />}
+          {tab === "dupes" && <RepetidasTab session={session} />}
+          {tab === "trade" && <TrocarTab session={session} />}
+          {tab === "search" && <BuscaTab session={session} />}
+          {tab === "config" && (
+            <ConfigTab
+              session={session}
+              leaveLocal={leaveLocal}
+              updateSessionKeys={updateSessionKeys}
+              theme={theme}
+              setTheme={setTheme}
+            />
+          )}
+        </main>
+      </ScrollArea>
 
       <footer className="app-footer relative z-30 shrink-0 border-t border-[var(--app-border-soft)] bg-[var(--app-chrome)] px-3 pb-[env(safe-area-inset-bottom,0px)] pt-2 backdrop-blur sm:px-4">
         <nav

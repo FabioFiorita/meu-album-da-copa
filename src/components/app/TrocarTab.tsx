@@ -132,11 +132,11 @@ export function TrocarTab({ session }: Props) {
   }
 
   const theyCanGiveMe = useMemo<Row[]>(
-    () => (compare ? [...compare.theyCanGiveMe].sort(sortRows) : []),
+    () => (compare ? Array.from(compare.theyCanGiveMe).sort(sortRows) : []),
     [compare],
   );
   const iCanGive = useMemo<Row[]>(
-    () => (compare ? [...compare.iCanGive].sort(sortRows) : []),
+    () => (compare ? Array.from(compare.iCanGive).sort(sortRows) : []),
     [compare],
   );
 
@@ -152,7 +152,7 @@ export function TrocarTab({ session }: Props) {
               <ArrowLeftRightIcon className="size-6" />
             </div>
             <div className="min-w-0 flex-1 pt-0.5">
-              <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+              <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
                 Trocar
               </h1>
               <p className="mt-1 text-[13px] font-semibold leading-relaxed text-white/72">
@@ -216,7 +216,7 @@ export function TrocarTab({ session }: Props) {
               <Loader2Icon className="size-6 animate-spin" />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-[18px] font-black leading-tight tracking-normal text-white">
+              <h1 className="text-[18px] font-semibold leading-tight tracking-normal text-white">
                 Comparando
               </h1>
               <p className="mt-1 text-[13px] font-semibold text-white/72">
@@ -246,7 +246,7 @@ export function TrocarTab({ session }: Props) {
             <ArrowLeftRightIcon className="size-6" />
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
-            <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+            <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
               {compare.otherAlbum.name}
             </h1>
             <p className="mt-1 truncate font-mono text-[12px] font-bold text-white/62">
@@ -374,7 +374,7 @@ function SectionBlock({
   return (
     <section
       style={sectionStyle(theme)}
-      className="team-card relative overflow-hidden rounded-[1.15rem] border-2 px-2 py-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
+      className="team-card relative overflow-hidden rounded-[1.15rem] border-2 p-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
     >
       <TeamBackgroundForms />
       <div className="relative z-10 flex min-h-10 items-center gap-2 px-1.5 pb-2">

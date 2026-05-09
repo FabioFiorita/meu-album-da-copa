@@ -440,6 +440,32 @@
     isolation: isolate;
   }
 
+  .app-main-scroll-area [data-slot="scroll-area-viewport"],
+  .album-sticker-scroll-area [data-slot="scroll-area-viewport"] {
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .app-main-scroll-area [data-slot="scroll-area-scrollbar"],
+  .album-sticker-scroll-area [data-slot="scroll-area-scrollbar"] {
+    border-left-color: rgba(255, 255, 255, 0.08);
+    padding-block: 0.35rem;
+    width: 0.65rem;
+  }
+
+  .app-main-scroll-area [data-slot="scroll-area-scrollbar"] {
+    margin-block: 0.35rem;
+  }
+
+  .app-main-scroll-area [data-slot="scroll-area-thumb"],
+  .album-sticker-scroll-area [data-slot="scroll-area-thumb"] {
+    background:
+      linear-gradient(180deg, rgba(244, 215, 124, 0.95), rgba(19, 201, 95, 0.72));
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.28),
+      0 0 12px rgba(214, 180, 93, 0.22);
+  }
+
   .sticker-slot-lite::before {
     background: url("/slot-26-white.png") center / contain no-repeat;
     content: "";

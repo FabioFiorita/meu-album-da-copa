@@ -30,10 +30,7 @@ function fallbackCopy(text: string): boolean {
   const ta = document.createElement("textarea");
   ta.value = text;
   ta.setAttribute("readonly", "");
-  ta.style.position = "fixed";
-  ta.style.top = "0";
-  ta.style.left = "0";
-  ta.style.opacity = "0";
+  ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
   document.body.appendChild(ta);
   ta.focus();
   ta.select();

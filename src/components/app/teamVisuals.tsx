@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- This module intentionally shares team visual helpers with SectionIcon. */
 import { TrophyIcon } from "lucide-react";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties } from "react";
 import type { AlbumSectionTemplate } from "@convex/lib/templates";
 
 export type TeamTheme = {
@@ -151,8 +151,6 @@ export function CocaColaIcon() {
 }
 
 export function SectionIcon({ section }: { section: AlbumSectionTemplate }) {
-  const [failed, setFailed] = useState(false);
-
   if (section.id === "FWC") {
     return <TrophyIcon className="size-4 text-[#ffd65c]" />;
   }
@@ -161,22 +159,21 @@ export function SectionIcon({ section }: { section: AlbumSectionTemplate }) {
     return <CocaColaIcon />;
   }
 
-  if (failed) {
-    return (
+  return (
+    <span className="relative flex size-full items-center justify-center overflow-hidden rounded-full">
       <span className="text-[9px] font-black leading-none tracking-normal text-[#101010]">
         {section.id.slice(0, 2)}
       </span>
-    );
-  }
-
-  return (
-    <img
-      src={`${import.meta.env.BASE_URL}flags/${section.id}.svg`}
-      alt=""
-      aria-hidden="true"
-      className="size-full rounded-full object-cover"
-      loading="lazy"
-      onError={() => setFailed(true)}
-    />
+      <img
+        src={`${import.meta.env.BASE_URL}flags/${section.id}.svg`}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 size-full rounded-full object-cover"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.style.display = "none";
+        }}
+      />
+    </span>
   );
 }

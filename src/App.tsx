@@ -54,7 +54,7 @@ export default function App() {
                 Sem o código abaixo não é possível recuperar o álbum. Quem
                 possuir o código completo poderá editar suas figurinhas.
               </span>
-              <code className="break-all rounded-md border border-[var(--app-border)] bg-[var(--app-field-bg)] px-2 py-2 text-sm text-[var(--app-dialog-text)]">
+              <code className="break-all rounded-md border border-[var(--app-border)] bg-[var(--app-field-bg)] p-2 text-sm text-[var(--app-dialog-text)]">
                 {welcomeCode}
               </code>
             </AlertDialogDescription>

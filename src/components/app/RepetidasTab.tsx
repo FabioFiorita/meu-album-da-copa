@@ -54,7 +54,7 @@ function sortByNumber(a: DupRow, b: DupRow) {
 }
 
 function formatSectionLine(sectionId: string, rows: DupRow[]): string {
-  const sorted = [...rows].sort(sortByNumber);
+  const sorted = Array.from(rows).sort(sortByNumber);
   return `${sectionId}: ${sorted.map((r) => r.number).join(", ")}`;
 }
 
@@ -78,14 +78,17 @@ export function RepetidasTab({ session }: Props) {
 
   const dupRows: DupRow[] = useMemo(() => {
     if (!snapshot) return [];
-    return snapshot.stickers
-      .filter((s) => s.count >= 2)
-      .map((s) => ({
+    const rows: DupRow[] = [];
+    for (const s of snapshot.stickers) {
+      if (s.count < 2) continue;
+      rows.push({
         key: s.key,
         sectionId: s.sectionId,
         number: s.number,
         count: s.count,
-      }));
+      });
+    }
+    return rows;
   }, [snapshot]);
 
   const dupBySection = useMemo(() => {
@@ -140,9 +143,11 @@ export function RepetidasTab({ session }: Props) {
 
   async function copyAllAsText() {
     if (dupBySection.size === 0) return;
-    const lines = WC_2026_TEMPLATE.sections
-      .filter((s) => dupBySection.has(s.id))
-      .map((s) => formatSectionLine(s.id, dupBySection.get(s.id)!));
+    const lines: string[] = [];
+    for (const section of WC_2026_TEMPLATE.sections) {
+      const rows = dupBySection.get(section.id);
+      if (rows) lines.push(formatSectionLine(section.id, rows));
+    }
     try {
       await copyText(lines.join("\n"));
       toast.success("Lista de repetidas copiada.");
@@ -153,9 +158,11 @@ export function RepetidasTab({ session }: Props) {
 
   async function exportEncodedDupes() {
     if (!snapshot) return;
-    const duplicates = snapshot.stickers
-      .filter((s) => s.count > 1)
-      .map((s) => ({ key: s.key, quantity: s.count - 1 }));
+    const duplicates: Array<{ key: string; quantity: number }> = [];
+    for (const s of snapshot.stickers) {
+      if (s.count <= 1) continue;
+      duplicates.push({ key: s.key, quantity: s.count - 1 });
+    }
     const payload = encodeDuplicatesPayloadV1({
       type: "duplicates",
       version: 1,
@@ -222,7 +229,7 @@ export function RepetidasTab({ session }: Props) {
             <FlipHorizontalIcon className="size-6" />
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
-            <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+            <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
               Repetidas
             </h1>
             <p className="mt-1 text-[13px] font-semibold text-white/72">
@@ -295,7 +302,7 @@ export function RepetidasTab({ session }: Props) {
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-[#d6b45d]/50 bg-[#2b2619] text-[#d6b45d]">
             <FlipHorizontalIcon className="size-7" />
           </div>
-          <h2 className="mt-4 text-[18px] font-black leading-tight text-white">
+          <h2 className="mt-4 text-[18px] font-semibold leading-tight text-white">
             Nenhuma repetida
           </h2>
           <p className="mx-auto mt-2 max-w-[280px] text-[13px] font-semibold leading-relaxed text-white/68">

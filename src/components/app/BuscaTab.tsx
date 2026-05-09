@@ -25,8 +25,15 @@ import {
 
 type Props = { session: AlbumSession };
 
-const COUNTRY_INPUTS = [0, 1, 2] as const;
-const NUMBER_INPUTS = [0, 1] as const;
+const COUNTRY_INPUTS = [
+  { index: 0, id: "country-letter-1" },
+  { index: 1, id: "country-letter-2" },
+  { index: 2, id: "country-letter-3" },
+] as const;
+const NUMBER_INPUTS = [
+  { index: 0, id: "sticker-number-1" },
+  { index: 1, id: "sticker-number-2" },
+] as const;
 const inputCellClass =
   "h-14 min-w-0 rounded-2xl border-2 border-[#d6b45d]/65 bg-black/28 text-center text-[21px] font-black uppercase leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.18)] outline-none transition-colors placeholder:text-white/28 focus:border-[#f4d77c] focus:bg-black/38 focus:ring-2 focus:ring-[#d6b45d]/25";
 
@@ -151,7 +158,7 @@ export function BuscaTab({ session }: Props) {
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
             <div className="mb-1 flex items-center gap-2">
-              <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+              <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
                 Busca+
               </h1>
               <Badge className="h-6 rounded-full border border-[#d6b45d]/45 bg-black/24 px-2 text-[10px] font-black uppercase tracking-normal text-[#f4d77c] shadow-none">
@@ -173,7 +180,7 @@ export function BuscaTab({ session }: Props) {
               <ZapIcon className="size-5" />
             </div>
             <div>
-              <h2 className="text-[14px] font-black leading-none text-white">
+              <h2 className="text-[14px] font-semibold leading-none text-white">
                 Código da figurinha
               </h2>
               <p className="mt-1 text-[11px] font-bold leading-none text-white/50">
@@ -185,14 +192,15 @@ export function BuscaTab({ session }: Props) {
 
         <div className="relative mt-5 rounded-[1.15rem] border border-white/10 bg-black/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
           <div className="grid grid-cols-[1fr_auto] gap-3">
-            <div className="min-w-0">
-              <label className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
+            <fieldset className="min-w-0">
+              <legend className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
                 País
-              </label>
+              </legend>
               <div className="mt-2 grid grid-cols-3 gap-2">
-                {COUNTRY_INPUTS.map((i) => (
+                {COUNTRY_INPUTS.map(({ index: i, id }) => (
                   <input
-                    key={i}
+                    key={id}
+                    id={id}
                     ref={(el) => {
                       countryInputRefs.current[i] = el;
                     }}
@@ -232,16 +240,17 @@ export function BuscaTab({ session }: Props) {
                   />
                 ))}
               </div>
-            </div>
+            </fieldset>
 
-            <div className="w-[7.25rem]">
-              <label className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
+            <fieldset className="w-[7.25rem]">
+              <legend className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
                 Número
-              </label>
+              </legend>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {NUMBER_INPUTS.map((i) => (
+                {NUMBER_INPUTS.map(({ index: i, id }) => (
                   <input
-                    key={i}
+                    key={id}
+                    id={id}
                     ref={(el) => {
                       numberInputRefs.current[i] = el;
                     }}
@@ -276,7 +285,7 @@ export function BuscaTab({ session }: Props) {
                   />
                 ))}
               </div>
-            </div>
+            </fieldset>
           </div>
         </div>
       </section>
@@ -317,7 +326,7 @@ export function BuscaTab({ session }: Props) {
                 </span>
               </div>
               <div className="min-w-0">
-                <h2 className="country-name-outline text-[18px] font-black leading-tight text-white">
+                <h2 className="country-name-outline text-[18px] font-semibold leading-tight text-white">
                   Digite para buscar
                 </h2>
                 <p className="country-name-outline mt-2 text-[13px] font-semibold leading-relaxed text-white/74">
@@ -366,7 +375,7 @@ export function BuscaTab({ session }: Props) {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="country-name-outline truncate text-[17px] font-black leading-tight text-white">
+                    <h2 className="country-name-outline truncate text-[17px] font-semibold leading-tight text-white">
                       {resolved.key}
                     </h2>
                     {resolvedSection && (

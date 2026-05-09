@@ -10,7 +10,7 @@ import {
   Trash2Icon,
   type LucideIcon,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useReducer } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -63,6 +63,29 @@ const mutedText = "text-[var(--app-muted-text)]";
 const outlineButton =
   "rounded-2xl border-[var(--app-border)] bg-[var(--app-button-muted)] text-[var(--app-gold)] hover:bg-[var(--app-button-muted-hover)] hover:text-[var(--app-gold-strong)]";
 
+type ConfigUiState = {
+  nameDraft: string | null;
+  rotateOpen: boolean;
+  newKeysOpen: string | null;
+  resetOpen: boolean;
+  shareFullOpen: boolean;
+};
+
+const initialConfigUiState: ConfigUiState = {
+  nameDraft: null,
+  rotateOpen: false,
+  newKeysOpen: null,
+  resetOpen: false,
+  shareFullOpen: false,
+};
+
+function configUiReducer(
+  state: ConfigUiState,
+  patch: Partial<ConfigUiState>,
+): ConfigUiState {
+  return { ...state, ...patch };
+}
+
 export function ConfigTab({
   session,
   leaveLocal,
@@ -79,11 +102,12 @@ export function ConfigTab({
   const rotate = useMutation(api.albums.rotateWriteKey);
   const resetAlbum = useMutation(api.albums.resetAlbum);
 
-  const [nameDraft, setNameDraft] = useState<string | null>(null);
-  const [rotateOpen, setRotateOpen] = useState(false);
-  const [newKeysOpen, setNewKeysOpen] = useState<string | null>(null);
-  const [resetOpen, setResetOpen] = useState(false);
-  const [shareFullOpen, setShareFullOpen] = useState(false);
+  const [uiState, setUiState] = useReducer(
+    configUiReducer,
+    initialConfigUiState,
+  );
+  const { nameDraft, rotateOpen, newKeysOpen, resetOpen, shareFullOpen } =
+    uiState;
 
   const nameValue = nameDraft ?? snapshot?.album.name ?? "";
 
@@ -94,7 +118,7 @@ export function ConfigTab({
         writeKey: session.writeKey,
         name: nameValue.trim(),
       });
-      setNameDraft(null);
+      setUiState({ nameDraft: null });
       toast.success("Nome atualizado.");
     } catch (e) {
       toast.error(errorMessage(e));
@@ -120,8 +144,7 @@ export function ConfigTab({
         writeKey: session.writeKey,
       });
       updateSessionKeys(r.code, r.writeKey, r.fullAccessCode);
-      setRotateOpen(false);
-      setNewKeysOpen(r.fullAccessCode);
+      setUiState({ rotateOpen: false, newKeysOpen: r.fullAccessCode });
       toast.success("Chave rotacionada.");
     } catch (e) {
       toast.error(errorMessage(e));
@@ -134,7 +157,7 @@ export function ConfigTab({
         code: session.code,
         writeKey: session.writeKey,
       });
-      setResetOpen(false);
+      setUiState({ resetOpen: false });
       toast.success("Álbum resetado.");
     } catch (e) {
       toast.error(errorMessage(e));
@@ -149,7 +172,7 @@ export function ConfigTab({
             <PaletteIcon className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] font-black leading-tight tracking-normal">
+            <h1 className="text-[18px] font-semibold leading-tight tracking-normal">
               Aparência
             </h1>
             <p className={cn("mt-1 text-[12px] font-semibold", mutedText)}>
@@ -194,7 +217,7 @@ export function ConfigTab({
               <Input
                 id="album-name"
                 value={nameValue}
-                onChange={(e) => setNameDraft(e.target.value)}
+                onChange={(e) => setUiState({ nameDraft: e.target.value })}
                 className="h-11 rounded-2xl border-[var(--app-border)] bg-[var(--app-field-bg)] text-[var(--app-text)] placeholder:text-[var(--app-muted-text)]"
               />
             </Field>
@@ -255,7 +278,7 @@ export function ConfigTab({
                 variant="outline"
                 size="sm"
                 className={outlineButton}
-                onClick={() => setShareFullOpen(true)}
+                onClick={() => setUiState({ shareFullOpen: true })}
               >
                 <CopyIcon className="size-4" />
                 Completo
@@ -272,7 +295,7 @@ export function ConfigTab({
             type="button"
             variant="outline"
             className={outlineButton}
-            onClick={() => setRotateOpen(true)}
+            onClick={() => setUiState({ rotateOpen: true })}
           >
             <KeyRoundIcon className="size-4" />
             Rotacionar chave de edição
@@ -306,7 +329,7 @@ export function ConfigTab({
             type="button"
             variant="destructive"
             className="rounded-2xl font-black"
-            onClick={() => setResetOpen(true)}
+            onClick={() => setUiState({ resetOpen: true })}
           >
             <Trash2Icon className="size-4" />
             Resetar álbum
@@ -316,15 +339,15 @@ export function ConfigTab({
 
       <ConfirmDialogs
         rotateOpen={rotateOpen}
-        setRotateOpen={setRotateOpen}
+        setRotateOpen={(rotateOpen) => setUiState({ rotateOpen })}
         doRotate={doRotate}
         newKeysOpen={newKeysOpen}
-        setNewKeysOpen={setNewKeysOpen}
+        setNewKeysOpen={(newKeysOpen) => setUiState({ newKeysOpen })}
         resetOpen={resetOpen}
-        setResetOpen={setResetOpen}
+        setResetOpen={(resetOpen) => setUiState({ resetOpen })}
         doReset={doReset}
         shareFullOpen={shareFullOpen}
-        setShareFullOpen={setShareFullOpen}
+        setShareFullOpen={(shareFullOpen) => setUiState({ shareFullOpen })}
         fullAccessCode={session.fullAccessCode}
       />
     </div>
@@ -348,7 +371,7 @@ function SectionHeader({
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <h2 className="text-[16px] font-black leading-tight tracking-normal">
+        <h2 className="text-[16px] font-semibold leading-tight tracking-normal">
           {title}
         </h2>
         {description && (

@@ -140,7 +140,7 @@ export function Onboarding({
   }
 
   return (
-    <div className="min-h-svh overflow-y-auto bg-black text-white">
+    <div className="h-svh overflow-y-auto bg-[#050606] text-white">
       <div
         className="relative mx-auto flex min-h-svh max-w-[430px] flex-col bg-[#141414] bg-no-repeat shadow-2xl"
         style={{
@@ -152,7 +152,7 @@ export function Onboarding({
         <main className="relative z-10 flex flex-1 flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[clamp(7.1rem,17svh,12.5rem)] min-[390px]:px-6">
           <section className="text-center">
             <h1
-              className="font-['Arial_Rounded_MT_Bold','Trebuchet_MS',sans-serif] text-[clamp(2rem,4.1svh,2.38rem)] leading-none font-black tracking-normal text-[#FFF7E8]"
+              className="font-['Arial_Rounded_MT_Bold','Trebuchet_MS',sans-serif] text-[clamp(2rem,4.1svh,2.38rem)] leading-none font-semibold tracking-normal text-[#FFF7E8]"
               style={{
                 WebkitTextStroke: "1px #815A21",
                 textShadow:
@@ -169,7 +169,7 @@ export function Onboarding({
           </section>
 
           <section className="mt-[clamp(1.1rem,2.6svh,1.7rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1rem,2.1svh,1.3rem)] py-[clamp(1rem,2.2svh,1.35rem)] text-center shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.55rem,3.25svh,1.95rem)] leading-none font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+            <h2 className="text-[clamp(1.55rem,3.25svh,1.95rem)] leading-none font-semibold tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
               Criar álbum novo
             </h2>
             <p className="mx-auto mt-3 max-w-[20.5rem] text-[clamp(0.94rem,1.95svh,1.1rem)] leading-tight text-white">
@@ -188,7 +188,7 @@ export function Onboarding({
           </section>
 
           <section className="mt-[clamp(0.85rem,2svh,1.25rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1.05rem,2.5svh,1.55rem)] py-[clamp(1rem,2.15svh,1.35rem)] shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.45rem,3svh,1.85rem)] leading-tight font-black tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+            <h2 className="text-[clamp(1.45rem,3svh,1.85rem)] leading-tight font-semibold tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
               Entrar com código
               <br />
               completo
