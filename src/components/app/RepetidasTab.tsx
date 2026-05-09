@@ -374,7 +374,7 @@ export function RepetidasTab({ session }: Props) {
                           type="button"
                           size="sm"
                           variant="ghost"
-                          className="h-8 shrink-0 rounded-xl px-2 text-[11px] font-black text-white hover:bg-white/12 hover:text-white"
+                          className="repetidas-copy-button h-8 shrink-0 rounded-xl px-2 text-[11px] font-black text-white hover:bg-white/12 hover:text-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             void copySection(sec.id);
