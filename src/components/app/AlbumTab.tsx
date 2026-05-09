@@ -276,7 +276,7 @@ function SectionSheet({
       <SheetContent
         side="bottom"
         style={sectionStyle(theme)}
-        className="team-card album-detail mx-auto flex !h-[62svh] max-h-[32rem] w-[calc(100%-1.25rem)] max-w-[430px] gap-0 overflow-hidden rounded-t-[1.35rem] border-2 p-0 text-white shadow-[0_-18px_42px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.12)]"
+        className="team-card album-detail mx-auto flex !h-[78svh] max-h-[48rem] w-[calc(100%-1.25rem)] max-w-[430px] gap-0 overflow-hidden rounded-t-[1.35rem] border-2 p-0 text-white shadow-[0_-18px_42px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.12)]"
       >
         <TeamBackgroundForms />
         <div className="absolute inset-0 z-[1] bg-black/14" />
