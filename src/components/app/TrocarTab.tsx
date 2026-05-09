@@ -1,29 +1,29 @@
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeftRightIcon, ClipboardPasteIcon, MinusIcon, PlusIcon } from "lucide-react";
+import {
+  ArrowLeftRightIcon,
+  ClipboardPasteIcon,
+  Loader2Icon,
+  MinusIcon,
+  PlusIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AlbumSession } from "@/lib/albumSession";
 import { pasteFromClipboard } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
 import { normalizeAlbumCode, parseFullAccessCode } from "@convex/lib/access";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
+import { TeamBackgroundForms } from "./TeamBackgroundForms";
+import {
+  getTeamTheme,
+  SectionIcon,
+  sectionStyle,
+  slotStyle,
+} from "./teamVisuals";
 
 type Props = { session: AlbumSession };
 
@@ -55,12 +55,12 @@ function groupBySection(rows: Row[]): Map<string, Row[]> {
   return m;
 }
 
-function sectionTitle(sectionId: string): string {
-  return WC_2026_TEMPLATE.sections.find((s) => s.id === sectionId)?.title ?? sectionId;
+function sectionTemplate(sectionId: string) {
+  return WC_2026_TEMPLATE.sections.find((s) => s.id === sectionId);
 }
 
-function sectionEmoji(sectionId: string): string {
-  return WC_2026_TEMPLATE.sections.find((s) => s.id === sectionId)?.emoji ?? "🏷️";
+function sectionTitle(sectionId: string): string {
+  return sectionTemplate(sectionId)?.title ?? sectionId;
 }
 
 export function TrocarTab({ session }: Props) {
@@ -145,68 +145,93 @@ export function TrocarTab({ session }: Props) {
 
   if (!otherCode) {
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-28 pt-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowLeftRightIcon className="size-5" />
-              Trocar
-            </CardTitle>
-            <CardDescription>
-              Cole o código público do outro álbum para ver o que vocês podem
-              trocar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="other-code">Código público</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="other-code"
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    placeholder="ABCD-EFGH-IJ"
-                    autoCapitalize="characters"
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      type="button"
-                      variant="ghost"
-                      onClick={() => void paste()}
-                      aria-label="Colar"
-                    >
-                      <ClipboardPasteIcon />
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldDescription>
-                  O outro álbum precisa ter a comparação pública ativada.
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-            <Button
+      <div className="trocar-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
+        <section className="rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="flex items-start gap-3">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
+              <ArrowLeftRightIcon className="size-6" />
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+                Trocar
+              </h1>
+              <p className="mt-1 text-[13px] font-semibold leading-relaxed text-white/72">
+                Cole o código público de outro álbum para comparar as repetidas.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="other-code"
+            className="pl-1 text-[13px] font-black leading-none tracking-normal text-white"
+          >
+            Código público
+          </label>
+          <div className="flex h-14 items-center gap-3 rounded-2xl border-2 border-[#d6b45d]/75 bg-[#171717]/95 px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <input
+              id="other-code"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="ABCD-EFGH-IJ"
+              autoCapitalize="characters"
+              autoComplete="off"
+              className="h-full min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-white outline-none placeholder:text-white/45"
+            />
+            <button
               type="button"
-              className="mt-4 w-full"
-              onClick={submitCode}
+              onClick={() => void paste()}
+              aria-label="Colar"
+              className="-mr-1 inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/45 bg-black/20 text-[#d6b45d] outline-none transition-colors hover:bg-[#d6b45d]/10 hover:text-[#f4d77c] focus-visible:ring-2 focus-visible:ring-[#d6b45d]/35"
             >
-              Comparar
-            </Button>
-          </CardContent>
-        </Card>
+              <ClipboardPasteIcon className="size-5" />
+            </button>
+          </div>
+          <p className="pl-1 text-[12px] font-semibold leading-relaxed text-white/62">
+            O outro álbum precisa ter a comparação pública ativada.
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="h-12 rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[15px] font-black text-[#d6b45d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
+          onClick={submitCode}
+        >
+          <ArrowLeftRightIcon className="size-5" />
+          Comparar álbuns
+        </Button>
       </div>
     );
   }
 
   if (compare === undefined) {
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 pb-28 pt-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Comparando…</CardTitle>
-          </CardHeader>
-        </Card>
-        <Button type="button" variant="outline" onClick={clear}>
+      <div className="trocar-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
+        <section className="rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="flex items-center gap-3">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
+              <Loader2Icon className="size-6 animate-spin" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-[18px] font-black leading-tight tracking-normal text-white">
+                Comparando
+              </h1>
+              <p className="mt-1 text-[13px] font-semibold text-white/72">
+                Buscando as trocas possíveis entre os álbuns.
+              </p>
+            </div>
+          </div>
+        </section>
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="h-12 rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[15px] font-black text-[#d6b45d] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
+          onClick={clear}
+        >
           Trocar de álbum
         </Button>
       </div>
@@ -214,43 +239,68 @@ export function TrocarTab({ session }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 pb-28 pt-2">
-      <Card>
-        <CardHeader className="flex flex-col gap-1">
-          <CardTitle className="text-base">{compare.otherAlbum.name}</CardTitle>
-          <CardDescription className="font-mono text-xs">
-            {compare.otherAlbum.code}
-          </CardDescription>
-          <div className="flex gap-2 pt-1">
-            <Badge variant="secondary">
-              {compare.otherAlbum.ownedCount} coladas
-            </Badge>
-            <Badge variant="secondary">
-              {compare.otherAlbum.duplicateCount} repetidas
-            </Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="ml-auto"
-              onClick={clear}
-            >
-              Trocar de álbum
-            </Button>
+    <div className="trocar-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
+      <section className="rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
+        <div className="flex items-start gap-3">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
+            <ArrowLeftRightIcon className="size-6" />
           </div>
-        </CardHeader>
-      </Card>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <h1 className="truncate text-[18px] font-black leading-tight tracking-normal text-white">
+              {compare.otherAlbum.name}
+            </h1>
+            <p className="mt-1 truncate font-mono text-[12px] font-bold text-white/62">
+              {compare.otherAlbum.code}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl border border-[#d6b45d]/35 bg-black/25 px-3 py-2">
+            <p className="text-[10px] font-black uppercase leading-none tracking-normal text-[#d6b45d]">
+              Coladas
+            </p>
+            <p className="mt-1 text-[18px] font-black leading-none text-white tabular-nums">
+              {compare.otherAlbum.ownedCount}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-[#d6b45d]/35 bg-black/25 px-3 py-2">
+            <p className="text-[10px] font-black uppercase leading-none tracking-normal text-[#d6b45d]">
+              Repetidas
+            </p>
+            <p className="mt-1 text-[18px] font-black leading-none text-white tabular-nums">
+              {compare.otherAlbum.duplicateCount}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="mt-3 h-11 w-full rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[14px] font-black text-[#d6b45d] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
+          onClick={clear}
+        >
+          Trocar de álbum
+        </Button>
+      </section>
 
       <Tabs defaultValue="receive">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="receive">
+        <TabsList className="grid h-12 w-full grid-cols-2 rounded-2xl border border-[#d6b45d]/35 bg-[#151515]/95 p-1 shadow-[0_8px_26px_rgba(0,0,0,0.28)]">
+          <TabsTrigger
+            value="receive"
+            className="rounded-xl text-[12px] font-black text-white/62 data-[state=active]:border data-[state=active]:border-[#d6b45d]/45 data-[state=active]:bg-[linear-gradient(180deg,rgba(19,174,91,0.34),rgba(16,16,16,0.45))] data-[state=active]:text-[#35e66f]"
+          >
             Eles têm ({theyCanGiveMe.length})
           </TabsTrigger>
-          <TabsTrigger value="give">
+          <TabsTrigger
+            value="give"
+            className="rounded-xl text-[12px] font-black text-white/62 data-[state=active]:border data-[state=active]:border-[#d6b45d]/45 data-[state=active]:bg-[linear-gradient(180deg,rgba(19,174,91,0.34),rgba(16,16,16,0.45))] data-[state=active]:text-[#35e66f]"
+          >
             Eu tenho ({iCanGive.length})
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="receive" className="flex flex-col gap-2 pt-2">
+        <TabsContent value="receive" className="flex flex-col gap-2 pt-3">
           {theyCanGiveMe.length === 0 ? (
             <EmptyMsg text="Nenhuma figurinha que você precisa entre as repetidas deles." />
           ) : (
@@ -267,7 +317,7 @@ export function TrocarTab({ session }: Props) {
             ))
           )}
         </TabsContent>
-        <TabsContent value="give" className="flex flex-col gap-2 pt-2">
+        <TabsContent value="give" className="flex flex-col gap-2 pt-3">
           {iCanGive.length === 0 ? (
             <EmptyMsg text="Nenhuma das suas repetidas é faltante para eles." />
           ) : (
@@ -291,11 +341,14 @@ export function TrocarTab({ session }: Props) {
 
 function EmptyMsg({ text }: { text: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription>{text}</CardDescription>
-      </CardHeader>
-    </Card>
+    <div className="rounded-[1.35rem] border-2 border-[#d6b45d]/65 bg-[#171717]/95 px-5 py-8 text-center shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-[#d6b45d]/50 bg-[#2b2619] text-[#d6b45d]">
+        <ArrowLeftRightIcon className="size-7" />
+      </div>
+      <p className="mx-auto mt-4 max-w-[280px] text-[13px] font-semibold leading-relaxed text-white/68">
+        {text}
+      </p>
+    </div>
   );
 }
 
@@ -314,43 +367,85 @@ function SectionBlock({
   showQty: (r: Row) => number;
   onAction: (r: Row) => void;
 }) {
+  const section = sectionTemplate(sectionId);
+  const title = sectionTitle(sectionId);
+  const theme = getTeamTheme(sectionId);
+
   return (
-    <div className="flex flex-col gap-1 rounded-lg border p-2">
-      <div className="flex items-center gap-2 px-1">
-        <span aria-hidden>{sectionEmoji(sectionId)}</span>
-        <span className="font-medium">{sectionId}</span>
-        <span className="text-xs text-muted-foreground">
-          {sectionTitle(sectionId)}
+    <section
+      style={sectionStyle(theme)}
+      className="team-card relative overflow-hidden rounded-[1.15rem] border-2 px-2 py-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
+    >
+      <TeamBackgroundForms />
+      <div className="relative z-10 flex min-h-10 items-center gap-2 px-1.5 pb-2">
+        <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
+          {section ? (
+            <SectionIcon section={section} />
+          ) : (
+            <span className="text-[9px] font-black leading-none tracking-normal text-[#101010]">
+              {sectionId.slice(0, 2)}
+            </span>
+          )}
         </span>
-        <Badge variant="secondary" className="ml-auto">
+        <span className="flex min-w-0 flex-1 items-baseline gap-2">
+          <span className="country-name-outline text-[15px] font-black leading-none tracking-normal text-white">
+            {sectionId}
+          </span>
+          {title !== sectionId && (
+            <span className="country-name-outline hidden truncate text-[11px] font-bold leading-none text-white/78 min-[380px]:inline">
+              {title}
+            </span>
+          )}
+        </span>
+        <Badge className="h-7 rounded-full border border-white/30 bg-black/42 px-2.5 text-[12px] font-black text-white shadow-none">
           {rows.length}
         </Badge>
       </div>
-      <div className="flex flex-col gap-1">
+
+      <div className="relative z-10 flex flex-col gap-2 pb-1">
         {rows.map((r) => (
           <div
             key={r.key}
-            className="flex items-center gap-3 rounded-md border px-3 py-2"
+            className="grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-white/22 bg-black/38 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           >
-            <span className="w-10 text-base font-semibold tabular-nums">
-              #{r.number}
-            </span>
-            <Badge variant="secondary" className="tabular-nums">
-              ×{showQty(r)} {qtyLabel}
-            </Badge>
+            <div
+              style={slotStyle(theme, true)}
+              className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
+            >
+              <span aria-hidden="true" className="sticker-slot-label">
+                <span>{sectionId}</span>
+                <span>{r.number}</span>
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="country-name-outline text-[15px] font-black leading-none text-white tabular-nums">
+                #{r.number}
+              </p>
+              <Badge className="mt-1 h-6 rounded-full border border-white/25 bg-black/45 px-2 text-[11px] font-black text-white shadow-none tabular-nums">
+                x{showQty(r)} {qtyLabel}
+              </Badge>
+            </div>
             <Button
               type="button"
               size="sm"
-              variant="default"
-              className="ml-auto"
+              variant={actionLabel === "Recebi" ? "default" : "outline"}
+              className={
+                actionLabel === "Recebi"
+                  ? "h-10 rounded-xl bg-[#13c95f] px-3 text-[12px] font-black text-white shadow-none hover:bg-[#14b957]"
+                  : "h-10 rounded-xl border-white/35 bg-black/24 px-3 text-[12px] font-black text-white hover:bg-white/12 hover:text-white"
+              }
               onClick={() => onAction(r)}
             >
-              {actionLabel === "Recebi" ? <PlusIcon /> : <MinusIcon />}
+              {actionLabel === "Recebi" ? (
+                <PlusIcon className="size-4" />
+              ) : (
+                <MinusIcon className="size-4" />
+              )}
               {actionLabel}
             </Button>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
