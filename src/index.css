@@ -330,6 +330,36 @@
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
   }
 
+  .app-shell[data-theme="light"] .album-remove-mode-message {
+    color: #211a10 !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-panel {
+    background-color: rgba(255, 250, 238, 0.58) !important;
+    border-color: rgba(156, 106, 19, 0.22) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.62),
+      0 8px 20px rgba(111, 71, 7, 0.08) !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-input {
+    background-color: rgba(255, 255, 255, 0.62) !important;
+    border-color: rgba(156, 106, 19, 0.56) !important;
+    color: #211a10 !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 7px 16px rgba(111, 71, 7, 0.14) !important;
+  }
+
+  .app-shell[data-theme="light"] .busca-tab .quick-code-input:focus {
+    background-color: rgba(255, 255, 255, 0.78) !important;
+    border-color: rgba(111, 71, 7, 0.72) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      0 0 0 2px rgba(156, 106, 19, 0.2),
+      0 8px 18px rgba(111, 71, 7, 0.14) !important;
+  }
+
   .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#d6b45d]"],
   .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#f4d77c]"],
   .app-shell[data-theme="light"] .trocar-tab [class*="text-[#d6b45d]"],
@@ -357,12 +387,32 @@
       0 0 2px rgba(0, 0, 0, 0.28);
   }
 
+  .app-shell[data-theme="light"] .trocar-tab .trade-team-label {
+    -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.78);
+    color: #ffffff !important;
+    text-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.92),
+      0 0 3px rgba(0, 0, 0, 0.8);
+  }
+
   .country-name-outline {
     -webkit-text-stroke: 0.28px rgba(0, 0, 0, 0.72);
     paint-order: stroke fill;
     text-shadow:
       0 1px 2px rgba(0, 0, 0, 0.92),
       0 0 2px rgba(0, 0, 0, 0.88);
+  }
+
+  .repetidas-copy-button {
+    -webkit-text-stroke: 0.28px rgba(0, 0, 0, 0.82);
+    paint-order: stroke fill;
+    text-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.9),
+      0 0 3px rgba(0, 0, 0, 0.78);
+  }
+
+  .repetidas-copy-button svg {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.82));
   }
 
   .team-card {
@@ -383,6 +433,18 @@
   .repetidas-tab .team-background-forms {
     filter: blur(2.5px);
     transform: scale(1.015);
+  }
+
+  .repetidas-tab .country-stickers-panel[data-state="open"] {
+    -webkit-overflow-scrolling: touch;
+    max-height: min(34rem, calc(100dvh - 11rem));
+    overscroll-behavior: contain;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .repetidas-tab .country-stickers-panel[data-state="open"]::-webkit-scrollbar {
+    display: none;
   }
 
   .busca-tab .team-background-forms {

@@ -116,7 +116,7 @@ export function slotStyle(theme: TeamTheme, owned: boolean): ThemeStyle {
     "--slot-paper": theme.paper ?? "#fff4fb",
     "--slot-ink": theme.ink ?? "#4d5360",
     backgroundColor: slotColor,
-    borderColor: owned ? theme.accent : "rgba(255, 255, 255, 0.34)",
+    borderColor: owned ? "#d6b45d" : "rgba(255, 255, 255, 0.34)",
   };
 }
 
