@@ -191,6 +191,11 @@
   html {
     @apply font-sans;
   }
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 @layer components {

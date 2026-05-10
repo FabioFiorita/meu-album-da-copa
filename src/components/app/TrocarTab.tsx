@@ -177,7 +177,7 @@ export function TrocarTab({ session }: Props) {
               placeholder="ABCD-EFGH-IJ"
               autoCapitalize="characters"
               autoComplete="off"
-              className="h-full min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-white outline-none placeholder:text-white/45"
+              className="h-full min-w-0 flex-1 bg-transparent text-base font-semibold text-white outline-none placeholder:text-white/45"
             />
             <button
               type="button"
