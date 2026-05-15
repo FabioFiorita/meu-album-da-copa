@@ -5,18 +5,28 @@ import {
   Loader2Icon,
   MinusIcon,
   PlusIcon,
+  QrCodeIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AlbumSession } from "@/lib/albumSession";
 import { pasteFromClipboard } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
+import { buildTradeCompareUrl } from "@/lib/shareLinks";
 import { normalizeAlbumCode, parseFullAccessCode } from "@convex/lib/access";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
+import { ShareQrPanel } from "./ShareQrPanel";
 import { TeamBackgroundForms } from "./TeamBackgroundForms";
 import {
   getTeamTheme,
@@ -25,7 +35,7 @@ import {
   slotStyle,
 } from "./teamVisuals";
 
-type Props = { session: AlbumSession };
+type Props = { session: AlbumSession; initialOtherCode?: string };
 
 type Row = {
   key: string;
@@ -63,9 +73,26 @@ function sectionTitle(sectionId: string): string {
   return sectionTemplate(sectionId)?.title ?? sectionId;
 }
 
-export function TrocarTab({ session }: Props) {
-  const [draft, setDraft] = useState("");
-  const [otherCode, setOtherCode] = useState<string | null>(null);
+function normalizeInitialOtherCode(
+  initialOtherCode: string | undefined,
+  myCode: string,
+): string | null {
+  if (!initialOtherCode) return null;
+  const code = normalizeAlbumCode(initialOtherCode);
+  if (code.length < 8 || code === normalizeAlbumCode(myCode)) return null;
+  return code;
+}
+
+export function TrocarTab({ session, initialOtherCode }: Props) {
+  const normalizedInitialOtherCode = normalizeInitialOtherCode(
+    initialOtherCode,
+    session.code,
+  );
+  const [draft, setDraft] = useState(normalizedInitialOtherCode ?? "");
+  const [otherCode, setOtherCode] = useState<string | null>(
+    normalizedInitialOtherCode,
+  );
+  const [shareTradeQrOpen, setShareTradeQrOpen] = useState(false);
 
   const compare = useQuery(
     api.compare.compareWithAlbum,
@@ -203,6 +230,35 @@ export function TrocarTab({ session }: Props) {
           <ArrowLeftRightIcon className="size-5" />
           Comparar álbuns
         </Button>
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="h-12 rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[15px] font-black text-[#d6b45d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
+          onClick={() => setShareTradeQrOpen(true)}
+        >
+          <QrCodeIcon className="size-5" />
+          Meu QR de troca
+        </Button>
+        <Dialog open={shareTradeQrOpen} onOpenChange={setShareTradeQrOpen}>
+          <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto border-[var(--app-border)] bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border)]">
+            <DialogHeader>
+              <DialogTitle>QR de troca</DialogTitle>
+              <DialogDescription className="text-[var(--app-muted-text)]">
+                Mostre para outra pessoa comparar as repetidas dela com o seu
+                álbum.
+              </DialogDescription>
+            </DialogHeader>
+            <ShareQrPanel
+              value={buildTradeCompareUrl(session.code)}
+              title="Comparar comigo"
+              description="Ao escanear, o app abre direto na aba Trocar com seu código público preenchido."
+              copyLabel="Copiar link"
+              rawLabel="Código público"
+              rawValue={normalizeAlbumCode(session.code)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

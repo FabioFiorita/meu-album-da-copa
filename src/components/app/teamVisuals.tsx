@@ -84,7 +84,7 @@ const TEAM_THEMES: Record<string, TeamTheme> = {
   BIH: { primary: "#002395", secondary: "#f7d116", accent: "#ffffff", slot: "#002395" },
   HAI: { primary: "#00209f", secondary: "#d21034", accent: "#ffffff", slot: "#00209f" },
   TUR: { primary: "#e30a17", secondary: "#ffffff", accent: "#ffffff", slot: "#e30a17" },
-  CUR: { primary: "#002b7f", secondary: "#f9e814", accent: "#ffffff", slot: "#002b7f" },
+  CUW: { primary: "#002b7f", secondary: "#f9e814", accent: "#ffffff", slot: "#002b7f" },
   SWE: { primary: "#006aa7", secondary: "#fecc00", accent: "#fecc00", slot: "#006aa7" },
   NZL: { primary: "#00247d", secondary: "#cc142b", accent: "#ffffff", slot: "#00247d" },
   CPV: { primary: "#003893", secondary: "#ffffff", accent: "#cf2027", slot: "#003893" },
