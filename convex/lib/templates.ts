@@ -41,7 +41,7 @@ const COUNTRY_META: Array<{ id: string; title: string; emoji?: string }> = [
   { id: "AUS", title: "Austrália", emoji: "🇦🇺" },
   { id: "TUR", title: "Turquia", emoji: "🇹🇷" },
   { id: "GER", title: "Alemanha", emoji: "🇩🇪" },
-  { id: "CUR", title: "Curaçao", emoji: "🇨🇼" },
+  { id: "CUW", title: "Curaçao", emoji: "🇨🇼" },
   { id: "CIV", title: "Costa do Marfim", emoji: "🇨🇮" },
   { id: "ECU", title: "Equador", emoji: "🇪🇨" },
   { id: "NED", title: "Holanda", emoji: "🇳🇱" },

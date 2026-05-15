@@ -36,7 +36,9 @@ import type { AlbumSession } from "@/lib/albumSession";
 import type { AppTheme } from "@/lib/appTheme";
 import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
+import { buildJoinAlbumUrl } from "@/lib/shareLinks";
 import { cn } from "@/lib/utils";
+import { ShareQrPanel } from "./ShareQrPanel";
 
 type Props = {
   session: AlbumSession;
@@ -483,6 +485,14 @@ function ConfirmDialogs({
               pessoas de confiança.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <ShareQrPanel
+            value={buildJoinAlbumUrl(fullAccessCode)}
+            title="Entrar neste álbum"
+            description="Aponte a câmera de outro celular para abrir este álbum com acesso de edição."
+            copyLabel="Copiar link"
+            rawLabel="Código completo"
+            rawValue={fullAccessCode}
+          />
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction

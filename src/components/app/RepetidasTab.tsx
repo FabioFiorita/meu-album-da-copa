@@ -6,6 +6,7 @@ import {
   FlipHorizontalIcon,
   MinusIcon,
   PlusIcon,
+  QrCodeIcon,
   SearchIcon,
   Share2Icon,
 } from "lucide-react";
@@ -14,6 +15,13 @@ import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +33,7 @@ import type { AlbumSession } from "@/lib/albumSession";
 import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
 import { encodeDuplicatesPayloadV1 } from "@/lib/sharePayloads";
+import { buildTradeCompareUrl } from "@/lib/shareLinks";
 import { normalizeAlbumCode } from "@convex/lib/access";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
 import {
@@ -34,6 +43,7 @@ import {
   slotStyle,
 } from "./teamVisuals";
 import { TeamBackgroundForms } from "./TeamBackgroundForms";
+import { ShareQrPanel } from "./ShareQrPanel";
 
 type Props = { session: AlbumSession };
 
@@ -65,6 +75,7 @@ export function RepetidasTab({ session }: Props) {
   });
   const addCopies = useMutation(api.stickers.addCopies);
   const [q, setQ] = useState("");
+  const [shareTradeQrOpen, setShareTradeQrOpen] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [closingSections, setClosingSections] = useState<string[]>([]);
   const closeTimers = useRef<Record<string, number>>({});
@@ -254,6 +265,10 @@ export function RepetidasTab({ session }: Props) {
               <DropdownMenuItem onClick={() => void exportEncodedDupes()}>
                 Payload FIGUS_DUPLICATES
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShareTradeQrOpen(true)}>
+                <QrCodeIcon />
+                QR para trocar
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -270,6 +285,26 @@ export function RepetidasTab({ session }: Props) {
           Copiar tudo
         </Button>
       </section>
+
+      <Dialog open={shareTradeQrOpen} onOpenChange={setShareTradeQrOpen}>
+        <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto border-[var(--app-border)] bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border)]">
+          <DialogHeader>
+            <DialogTitle>QR para trocar</DialogTitle>
+            <DialogDescription className="text-[var(--app-muted-text)]">
+              Mostre este QR para outra pessoa comparar as repetidas dela com o
+              seu álbum.
+            </DialogDescription>
+          </DialogHeader>
+          <ShareQrPanel
+            value={buildTradeCompareUrl(session.code)}
+            title="Comparar comigo"
+            description="Ao escanear, o app abre direto na aba Trocar com seu código público preenchido."
+            copyLabel="Copiar link"
+            rawLabel="Código público"
+            rawValue={normalizeAlbumCode(session.code)}
+          />
+        </DialogContent>
+      </Dialog>
 
       <div className="flex flex-col gap-2">
         <label

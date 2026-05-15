@@ -28,7 +28,7 @@ const tabs = [
   { id: "config", label: "Config", Icon: SettingsIcon },
 ] as const;
 
-type TabId = (typeof tabs)[number]["id"];
+export type TabId = (typeof tabs)[number]["id"];
 
 type Props = {
   session: AlbumSession;
@@ -38,10 +38,18 @@ type Props = {
     writeKey: string,
     fullAccessCode: string,
   ) => void;
+  initialTab?: TabId;
+  initialTradeCode?: string;
 };
 
-export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
-  const [tab, setTab] = useState<TabId>("album");
+export function MainLayout({
+  session,
+  leaveLocal,
+  updateSessionKeys,
+  initialTab,
+  initialTradeCode,
+}: Props) {
+  const [tab, setTab] = useState<TabId>(initialTab ?? "album");
   const [theme, setThemeState] = useState<AppTheme>(() => readStoredTheme());
 
   useEffect(() => {
@@ -95,7 +103,9 @@ export function MainLayout({ session, leaveLocal, updateSessionKeys }: Props) {
       >
         {tab === "album" && <AlbumTab session={session} />}
         {tab === "dupes" && <RepetidasTab session={session} />}
-        {tab === "trade" && <TrocarTab session={session} />}
+        {tab === "trade" && (
+          <TrocarTab session={session} initialOtherCode={initialTradeCode} />
+        )}
         {tab === "search" && <BuscaTab session={session} />}
         {tab === "config" && (
           <ConfigTab
