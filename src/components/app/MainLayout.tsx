@@ -99,7 +99,7 @@ export function MainLayout({
 
       <div
         data-app-scroll-container
-        className="relative z-10 min-h-0 flex-1 overflow-auto px-4 sm:px-6"
+        className="relative z-10 min-h-0 flex-1 touch-manipulation overflow-auto px-4 sm:px-6"
       >
         {tab === "album" && <AlbumTab session={session} />}
         {tab === "dupes" && <RepetidasTab session={session} />}
