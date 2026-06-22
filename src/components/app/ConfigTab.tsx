@@ -10,7 +10,7 @@ import {
   Trash2Icon,
   type LucideIcon,
 } from "lucide-react";
-import { type ReactNode, useReducer } from "react";
+import { lazy, type ReactNode, Suspense, useReducer } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -38,7 +38,20 @@ import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
 import { buildJoinAlbumUrl } from "@/lib/shareLinks";
 import { cn } from "@/lib/utils";
-import { ShareQrPanel } from "./ShareQrPanel";
+import { Spinner } from "@/components/ui/spinner";
+
+const ShareQrPanel = lazy(() =>
+  import("./ShareQrPanel").then((m) => ({ default: m.ShareQrPanel })),
+);
+
+function QrPanelFallback() {
+  return (
+    <div className="flex justify-center py-10">
+      <Spinner className="size-6 text-[var(--app-gold)]" />
+      <span className="sr-only">Carregando QR…</span>
+    </div>
+  );
+}
 
 type Props = {
   session: AlbumSession;
@@ -58,7 +71,7 @@ const themeOptions = [
 ] satisfies Array<{ value: AppTheme; label: string; Icon: LucideIcon }>;
 
 const cardClass =
-  "rounded-[1.35rem] border-2 border-[var(--app-border)] bg-[var(--app-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]";
+  "rounded-[var(--app-radius-xl)] border-2 border-[var(--app-border)] bg-[var(--app-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]";
 
 const mutedText = "text-[var(--app-muted-text)]";
 
@@ -71,6 +84,7 @@ type ConfigUiState = {
   newKeysOpen: string | null;
   resetOpen: boolean;
   shareFullOpen: boolean;
+  leaveOpen: boolean;
 };
 
 const initialConfigUiState: ConfigUiState = {
@@ -79,6 +93,7 @@ const initialConfigUiState: ConfigUiState = {
   newKeysOpen: null,
   resetOpen: false,
   shareFullOpen: false,
+  leaveOpen: false,
 };
 
 function configUiReducer(
@@ -108,8 +123,14 @@ export function ConfigTab({
     configUiReducer,
     initialConfigUiState,
   );
-  const { nameDraft, rotateOpen, newKeysOpen, resetOpen, shareFullOpen } =
-    uiState;
+  const {
+    nameDraft,
+    rotateOpen,
+    newKeysOpen,
+    resetOpen,
+    shareFullOpen,
+    leaveOpen,
+  } = uiState;
 
   const nameValue = nameDraft ?? snapshot?.album.name ?? "";
 
@@ -174,10 +195,10 @@ export function ConfigTab({
             <PaletteIcon className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] font-semibold leading-tight tracking-normal">
+            <h1 className="text-lg font-semibold leading-tight tracking-normal">
               Aparência
             </h1>
-            <p className={cn("mt-1 text-[12px] font-semibold", mutedText)}>
+            <p className={cn("mt-1 text-sm font-semibold", mutedText)}>
               Escolha como o álbum aparece neste aparelho.
             </p>
           </div>
@@ -193,7 +214,7 @@ export function ConfigTab({
                 aria-pressed={selected}
                 onClick={() => setTheme(value)}
                 className={cn(
-                  "flex h-9 min-w-[6.5rem] items-center justify-center gap-1.5 rounded-xl border px-3 text-[12px] font-black transition-colors",
+                  "flex h-9 min-w-[6.5rem] items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-black transition-colors",
                   selected
                     ? "border-[var(--app-nav-active-border)] bg-[var(--app-nav-active)] text-[var(--app-nav-active-text)]"
                     : "border-transparent text-[var(--app-muted-text)] hover:bg-[var(--app-button-muted)] hover:text-[var(--app-text)]",
@@ -250,6 +271,7 @@ export function ConfigTab({
               </FieldDescription>
             </div>
             <Switch
+              aria-label="Comparação pública"
               checked={snapshot?.album.compareEnabled ?? false}
               onCheckedChange={(v) => void onCompare(v)}
               disabled={snapshot === undefined}
@@ -257,7 +279,7 @@ export function ConfigTab({
           </div>
 
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--app-border-soft)] bg-[var(--app-field-bg)] p-3">
-            <p className="break-all font-mono text-[12px] font-bold text-[var(--app-text)]">
+            <p className="break-all font-mono text-sm font-bold text-[var(--app-text)]">
               {session.code}
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -312,7 +334,7 @@ export function ConfigTab({
             type="button"
             variant="outline"
             className={outlineButton}
-            onClick={() => leaveLocal()}
+            onClick={() => setUiState({ leaveOpen: true })}
           >
             <LogOutIcon className="size-4" />
             Sair deste álbum aqui
@@ -320,7 +342,7 @@ export function ConfigTab({
         </div>
       </section>
 
-      <section className="rounded-[1.35rem] border-2 border-red-500/45 bg-[var(--app-danger-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.18)]">
+      <section className="rounded-[var(--app-radius-xl)] border-2 border-red-500/45 bg-[var(--app-danger-card)] p-4 text-[var(--app-text)] shadow-[0_14px_36px_rgba(0,0,0,0.18)]">
         <SectionHeader
           title="Zona de perigo"
           description="Apaga todas as figurinhas marcadas."
@@ -350,6 +372,9 @@ export function ConfigTab({
         doReset={doReset}
         shareFullOpen={shareFullOpen}
         setShareFullOpen={(shareFullOpen) => setUiState({ shareFullOpen })}
+        leaveOpen={leaveOpen}
+        setLeaveOpen={(leaveOpen) => setUiState({ leaveOpen })}
+        doLeave={leaveLocal}
         fullAccessCode={session.fullAccessCode}
       />
     </div>
@@ -373,11 +398,11 @@ function SectionHeader({
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <h2 className="text-[16px] font-semibold leading-tight tracking-normal">
+        <h2 className="text-base font-semibold leading-tight tracking-normal">
           {title}
         </h2>
         {description && (
-          <p className={cn("mt-1 text-[12px] font-semibold", mutedText)}>
+          <p className={cn("mt-1 text-sm font-semibold", mutedText)}>
             {description}
           </p>
         )}
@@ -397,6 +422,9 @@ function ConfirmDialogs({
   doReset,
   shareFullOpen,
   setShareFullOpen,
+  leaveOpen,
+  setLeaveOpen,
+  doLeave,
   fullAccessCode,
 }: {
   rotateOpen: boolean;
@@ -409,6 +437,9 @@ function ConfirmDialogs({
   doReset: () => Promise<void>;
   shareFullOpen: boolean;
   setShareFullOpen: (open: boolean) => void;
+  leaveOpen: boolean;
+  setLeaveOpen: (open: boolean) => void;
+  doLeave: () => void;
   fullAccessCode: string;
 }) {
   return (
@@ -485,14 +516,16 @@ function ConfirmDialogs({
               pessoas de confiança.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <ShareQrPanel
-            value={buildJoinAlbumUrl(fullAccessCode)}
-            title="Entrar neste álbum"
-            description="Aponte a câmera de outro celular para abrir este álbum com acesso de edição."
-            copyLabel="Copiar link"
-            rawLabel="Código completo"
-            rawValue={fullAccessCode}
-          />
+          <Suspense fallback={<QrPanelFallback />}>
+            <ShareQrPanel
+              value={buildJoinAlbumUrl(fullAccessCode)}
+              title="Entrar neste álbum"
+              description="Aponte a câmera de outro celular para abrir este álbum com acesso de edição."
+              copyLabel="Copiar link"
+              rawLabel="Código completo"
+              rawValue={fullAccessCode}
+            />
+          </Suspense>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
@@ -507,6 +540,38 @@ function ConfirmDialogs({
               }
             >
               Copiar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </ThemedAlertContent>
+      </AlertDialog>
+
+      <AlertDialog open={leaveOpen} onOpenChange={setLeaveOpen}>
+        <ThemedAlertContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair deste álbum?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você vai sair deste álbum NESTE aparelho. Sem o código completo
+              salvo, não dá para recuperar o acesso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Suspense fallback={<QrPanelFallback />}>
+            <ShareQrPanel
+              value={buildJoinAlbumUrl(fullAccessCode)}
+              title="Salve o código completo antes de sair"
+              description="Guarde este código ou aponte a câmera de outro celular. Ele é a única forma de voltar a este álbum."
+              copyLabel="Copiar link"
+              rawLabel="Código completo"
+              rawValue={fullAccessCode}
+            />
+          </Suspense>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              variant="destructive"
+              onClick={() => doLeave()}
+            >
+              Sair mesmo assim
             </AlertDialogAction>
           </AlertDialogFooter>
         </ThemedAlertContent>

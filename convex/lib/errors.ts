@@ -5,10 +5,9 @@ export const APP_ERROR_CODES = [
   "INVALID_WRITE_KEY",
   "INVALID_STICKER",
   "COMPARE_DISABLED",
-  "TRADE_NOT_FOUND",
-  "TRADE_STALE",
   "COUNT_LIMIT_EXCEEDED",
   "INVALID_SHARE_PAYLOAD",
+  "CODE_ALLOCATION_FAILED",
 ] as const;
 
 export type AppErrorCode = (typeof APP_ERROR_CODES)[number];

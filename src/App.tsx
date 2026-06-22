@@ -21,11 +21,26 @@ import {
   savePendingTradeCode,
 } from "@/lib/shareLinks";
 import { normalizeAlbumCode } from "@convex/lib/access";
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 import { MainLayout } from "./components/app/MainLayout";
 import { Onboarding } from "./components/app/Onboarding";
-import { ShareQrPanel } from "./components/app/ShareQrPanel";
+
+const ShareQrPanel = lazy(() =>
+  import("./components/app/ShareQrPanel").then((m) => ({
+    default: m.ShareQrPanel,
+  })),
+);
+
+function QrPanelFallback() {
+  return (
+    <div className="flex justify-center py-10">
+      <Spinner className="size-6 text-[var(--app-gold)]" />
+      <span className="sr-only">Carregando QR…</span>
+    </div>
+  );
+}
 
 type StartupTab = "album" | "dupes" | "trade" | "search" | "config";
 type StartupRoute = {
@@ -172,14 +187,16 @@ export default function App() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           {welcomeCode && (
-            <ShareQrPanel
-              value={buildJoinAlbumUrl(welcomeCode)}
-              title="Entrar neste álbum"
-              description="Aponte a câmera de outro celular para abrir este álbum com acesso de edição."
-              copyLabel="Copiar link"
-              rawLabel="Código completo"
-              rawValue={welcomeCode}
-            />
+            <Suspense fallback={<QrPanelFallback />}>
+              <ShareQrPanel
+                value={buildJoinAlbumUrl(welcomeCode)}
+                title="Entrar neste álbum"
+                description="Aponte a câmera de outro celular para abrir este álbum com acesso de edição."
+                copyLabel="Copiar link"
+                rawLabel="Código completo"
+                rawValue={welcomeCode}
+              />
+            </Suspense>
           )}
           <AlertDialogFooter className="flex flex-col gap-2 border-[var(--app-border-soft)] bg-transparent sm:flex-row">
             <AlertDialogCancel>Fechar</AlertDialogCancel>

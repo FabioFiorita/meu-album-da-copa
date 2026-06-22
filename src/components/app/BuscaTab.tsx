@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "convex/react";
 import {
   CheckCircle2Icon,
   Repeat2Icon,
@@ -7,21 +6,17 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
+import { StickerSlot, TabHeaderCard } from "@/components/album";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAlbumSnapshot } from "@/hooks/useAlbumSnapshot";
+import { useStickerActions } from "@/hooks/useStickerActions";
 import type { AlbumSession } from "@/lib/albumSession";
 import { errorMessage } from "@/lib/errors";
 import { buildStickerKey } from "@convex/lib/stickerKeys";
 import { stickerExists, WC_2026_TEMPLATE } from "@convex/lib/templates";
 import { TeamBackgroundForms } from "./TeamBackgroundForms";
-import {
-  getTeamTheme,
-  SectionIcon,
-  sectionStyle,
-  slotStyle,
-  type ThemeStyle,
-} from "./teamVisuals";
+import { getTeamTheme, SectionIcon, sectionStyle } from "./teamVisuals";
 
 type Props = { session: AlbumSession };
 
@@ -35,14 +30,11 @@ const NUMBER_INPUTS = [
   { index: 1, id: "sticker-number-2" },
 ] as const;
 const inputCellClass =
-  "quick-code-input h-14 min-w-0 rounded-2xl border-2 border-[#d6b45d]/65 bg-black/28 text-center text-[21px] font-black uppercase leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.18)] outline-none transition-colors placeholder:text-white/28 focus:border-[#f4d77c] focus:bg-black/38 focus:ring-2 focus:ring-[#d6b45d]/25";
+  "quick-code-input h-14 min-w-0 rounded-[var(--app-radius-md)] border-2 border-[var(--app-border-strong)] bg-[var(--app-field-bg)] text-center text-xl font-black uppercase leading-none text-[var(--app-text)] shadow-[var(--app-shadow-sm)] outline-none transition-colors placeholder:text-[var(--app-muted-text)] focus:border-[var(--app-gold-accent)] focus:bg-[var(--app-surface-elevated)] focus:ring-2 focus:ring-[var(--app-border)]";
 
 export function BuscaTab({ session }: Props) {
-  const snapshot = useQuery(api.albums.getPrivateSnapshot, {
-    code: session.code,
-    writeKey: session.writeKey,
-  });
-  const markQuick = useMutation(api.stickers.markQuick);
+  const { snapshot } = useAlbumSnapshot();
+  const { markQuick } = useStickerActions(session);
   const [country, setCountry] = useState("");
   const [num, setNum] = useState("");
   const countryInputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -93,15 +85,6 @@ export function BuscaTab({ session }: Props) {
   const isComplete = country.trim().length === 3 && num.trim().length > 0;
   const errorMessageText =
     isComplete && resolved?.error ? resolved.error : null;
-  const placeholderCardStyle = previewSection
-    ? sectionStyle(previewTheme)
-    : undefined;
-  const placeholderSlotStyle: ThemeStyle = previewSection
-    ? ({
-        ...slotStyle(previewTheme, false),
-        "--slot-ink": "#111111",
-      })
-    : { "--slot-ink": "#111111" };
   const statusLabel = !snapshot
     ? "Sincronizando..."
     : count === 0
@@ -109,17 +92,17 @@ export function BuscaTab({ session }: Props) {
       : count === 1
         ? "Possuída"
         : `${count} cópias`;
+  const previewHeadingClass = previewSection
+    ? "country-name-outline text-lg font-semibold leading-tight text-[var(--team-ink)]"
+    : "text-lg font-semibold leading-tight text-[var(--app-text)]";
+  const previewSubtitleClass = previewSection
+    ? "country-name-outline mt-2 text-sm font-semibold leading-relaxed text-[var(--team-ink)]"
+    : "mt-2 text-sm font-semibold leading-relaxed text-[var(--app-muted-text)]";
 
   async function runMark(mode: "owned" | "duplicate") {
     if (!resolved || !resolved.key) return;
     try {
-      await markQuick({
-        code: session.code,
-        writeKey: session.writeKey,
-        sectionId: resolved.sectionId,
-        number: resolved.number,
-        mode,
-      });
+      await markQuick(resolved.sectionId, resolved.number, mode);
       toast.success(mode === "owned" ? "Possuída." : "Repetida ajustada.");
     } catch (e) {
       toast.error(errorMessage(e));
@@ -150,50 +133,39 @@ export function BuscaTab({ session }: Props) {
 
   return (
     <div className="busca-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
-      <section className="relative overflow-hidden rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
-        <div className="absolute -right-10 -top-12 size-32 rounded-full bg-[#d6b45d]/12 blur-2xl" />
-        <div className="relative flex items-start gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
-            <SearchIcon className="size-6" />
-          </div>
-          <div className="min-w-0 flex-1 pt-0.5">
-            <div className="mb-1 flex items-center gap-2">
-              <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
-                Busca+
-              </h1>
-              <Badge className="h-6 rounded-full border border-[#d6b45d]/45 bg-black/24 px-2 text-[10px] font-black uppercase tracking-normal text-[#f4d77c] shadow-none">
-                Rápida
-              </Badge>
-            </div>
-            <p className="text-[13px] font-semibold leading-snug text-white/72">
-              Ache a figurinha pelo código e atualize o álbum em um toque.
-            </p>
-          </div>
-        </div>
-      </section>
+      <TabHeaderCard
+        icon={SearchIcon}
+        title="Busca+"
+        subtitle="Ache a figurinha pelo código e atualize o álbum em um toque."
+        action={
+          <Badge className="h-6 rounded-full border border-[var(--app-border)] bg-[var(--app-field-bg)] px-2 text-2xs font-black uppercase tracking-normal text-[var(--app-gold-accent)] shadow-none">
+            Rápida
+          </Badge>
+        }
+      />
 
-      <section className="relative overflow-hidden rounded-[1.35rem] border-2 border-[#d6b45d]/75 bg-[#171717]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)]">
-        <div className="absolute inset-x-6 top-5 h-16 rounded-full bg-[#d6b45d]/8 blur-xl" />
+      <section className="relative overflow-hidden rounded-[var(--app-radius-xl)] border-2 border-[var(--app-border-strong)] bg-[var(--app-surface)] p-4 shadow-[var(--app-shadow-lg)]">
+        <div className="absolute inset-x-6 top-5 h-16 rounded-full bg-[color-mix(in_srgb,var(--app-gold)_8%,transparent)] blur-xl" />
         <div className="relative flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-[#d6b45d]/45 bg-[#2b2619] text-[#d6b45d]">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-gold)] text-[var(--app-gold-accent)]">
               <ZapIcon className="size-5" />
             </div>
             <div>
-              <h2 className="text-[14px] font-semibold leading-none text-white">
+              <h2 className="text-sm font-semibold leading-none text-[var(--app-text)]">
                 Código da figurinha
               </h2>
-              <p className="mt-1 text-[11px] font-bold leading-none text-white/50">
+              <p className="mt-1 text-xs font-bold leading-none text-[var(--app-muted-text)]">
                 País + número
               </p>
             </div>
           </div>
         </div>
 
-        <div className="quick-code-panel relative mt-5 rounded-[1.15rem] border border-white/10 bg-black/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+        <div className="quick-code-panel relative mt-5 rounded-[var(--app-radius-lg)] border border-[var(--app-border-soft)] bg-[var(--app-field-bg)] p-3 shadow-[var(--app-shadow-sm)]">
           <div className="grid grid-cols-[1fr_auto] gap-3">
             <fieldset className="min-w-0">
-              <legend className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
+              <legend className="pl-1 text-xs font-black uppercase leading-none tracking-normal text-[var(--app-muted-text)]">
                 País
               </legend>
               <div className="mt-2 grid grid-cols-3 gap-2">
@@ -243,7 +215,7 @@ export function BuscaTab({ session }: Props) {
             </fieldset>
 
             <fieldset className="w-[7.25rem]">
-              <legend className="pl-1 text-[11px] font-black uppercase leading-none tracking-normal text-white/62">
+              <legend className="pl-1 text-xs font-black uppercase leading-none tracking-normal text-[var(--app-muted-text)]">
                 Número
               </legend>
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -293,43 +265,45 @@ export function BuscaTab({ session }: Props) {
       {!resolved?.key ? (
         <>
           <section
-            style={placeholderCardStyle}
+            style={previewSection ? sectionStyle(previewTheme) : undefined}
             className={
               previewSection
-                ? "team-card relative overflow-hidden rounded-[1.35rem] border-2 p-5 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]"
-                : "relative overflow-hidden rounded-[1.35rem] border-2 border-[#d6b45d]/65 bg-[#171717]/95 p-5 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                ? "team-card relative overflow-hidden rounded-[var(--app-radius-xl)] border-2 p-5 shadow-[var(--app-shadow-lg)]"
+                : "relative overflow-hidden rounded-[var(--app-radius-xl)] border-2 border-[var(--app-border-strong)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow-lg)]"
             }
           >
             {previewSection ? (
               <>
                 <TeamBackgroundForms />
-                <div className="absolute inset-0 z-[1] bg-black/14" />
+                <div className="absolute inset-0 z-[1] bg-[var(--app-scrim)]" />
               </>
             ) : (
-              <div className="absolute -right-12 top-4 size-36 rounded-full bg-[#d6b45d]/9 blur-2xl" />
+              <div className="absolute -right-12 top-4 size-36 rounded-full bg-[color-mix(in_srgb,var(--app-gold)_9%,transparent)] blur-2xl" />
             )}
             <div className="relative z-10 grid grid-cols-[4.8rem_1fr] items-center gap-4">
-              <div
-                style={placeholderSlotStyle}
-                className={
-                  previewSection
-                    ? "sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
-                    : "sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-[#d6b45d]/55 bg-[#2b2619] text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
-                }
-              >
-                <span
-                  aria-hidden="true"
-                  className="sticker-slot-label text-black"
-                >
-                  <span>{previewCountry}</span>
-                  <span>{previewNumber}</span>
-                </span>
-              </div>
+              {previewSection ? (
+                <StickerSlot
+                  sectionId={previewSection.id}
+                  number={previewNumber}
+                  theme={previewTheme}
+                  owned={false}
+                  missing={false}
+                  ariaLabel={`Prévia da figurinha ${previewSection.id} ${previewNumber}`}
+                />
+              ) : (
+                <div className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-[var(--app-border-strong)] bg-[var(--app-surface-gold)] text-xs font-black leading-none tracking-normal shadow-[var(--app-shadow-sm)]">
+                  <span
+                    aria-hidden="true"
+                    className="sticker-slot-label text-black"
+                  >
+                    <span>{previewCountry}</span>
+                    <span>{previewNumber}</span>
+                  </span>
+                </div>
+              )}
               <div className="min-w-0">
-                <h2 className="country-name-outline text-[18px] font-semibold leading-tight text-white">
-                  Digite para buscar
-                </h2>
-                <p className="country-name-outline mt-2 text-[13px] font-semibold leading-relaxed text-white/74">
+                <h2 className={previewHeadingClass}>Digite para buscar</h2>
+                <p className={previewSubtitleClass}>
                   Use o código da figurinha para ver o status e marcar.
                 </p>
               </div>
@@ -338,7 +312,7 @@ export function BuscaTab({ session }: Props) {
           {errorMessageText && (
             <p
               role="alert"
-              className="-mt-2 px-4 text-[12px] font-black leading-tight tracking-normal text-[#ff3333]"
+              className="-mt-2 px-4 text-xs font-black leading-tight tracking-normal text-[var(--destructive)]"
             >
               {errorMessageText}
             </p>
@@ -347,45 +321,44 @@ export function BuscaTab({ session }: Props) {
       ) : resolved && resolved.key ? (
         <section
           style={sectionStyle(resolvedTheme)}
-          className="team-card relative overflow-hidden rounded-[1.35rem] border-2 p-5 shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]"
+          className="team-card relative overflow-hidden rounded-[var(--app-radius-xl)] border-2 p-5 shadow-[var(--app-shadow-lg)]"
         >
           <TeamBackgroundForms />
 
           <div className="relative z-10 grid grid-cols-[4.8rem_1fr] items-center gap-4">
-            <div
-              style={slotStyle(resolvedTheme, count > 0)}
-              className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
-            >
-              <span aria-hidden="true" className="sticker-slot-label">
-                <span>{resolved.sectionId}</span>
-                <span>{resolved.number}</span>
-              </span>
-            </div>
+            <StickerSlot
+              sectionId={resolved.sectionId}
+              number={resolved.number}
+              theme={resolvedTheme}
+              owned={count > 0}
+              duplicateCount={Math.max(0, count - 1)}
+              ariaLabel={`${resolved.key} — ${statusLabel}`}
+            />
 
             <div className="min-w-0">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
+                  <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[var(--app-shadow-sm)]">
                     {resolvedSection ? (
                       <SectionIcon section={resolvedSection} />
                     ) : (
-                      <span className="text-[9px] font-black leading-none text-[#101010]">
+                      <span className="text-2xs font-black leading-none text-black">
                         {resolved.sectionId.slice(0, 2)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="country-name-outline truncate text-[17px] font-semibold leading-tight text-white">
+                    <h2 className="country-name-outline truncate text-lg font-semibold leading-tight text-[var(--team-ink)]">
                       {resolved.key}
                     </h2>
                     {resolvedSection && (
-                      <p className="country-name-outline truncate text-[11px] font-bold text-white/82">
+                      <p className="country-name-outline truncate text-xs font-bold text-[var(--team-ink)]">
                         {resolvedSection.title}
                       </p>
                     )}
                   </div>
                 </div>
-                <Badge className="h-6 shrink-0 rounded-full border border-white/30 bg-black/42 px-2 text-[11px] font-black text-white shadow-none">
+                <Badge className="h-6 shrink-0 rounded-full border border-white/30 bg-[var(--app-scrim)] px-2 text-xs font-black text-white shadow-none">
                   {statusLabel}
                 </Badge>
               </div>
@@ -394,7 +367,7 @@ export function BuscaTab({ session }: Props) {
                 <Button
                   type="button"
                   size="sm"
-                  className="h-9 rounded-2xl bg-[linear-gradient(180deg,#16d866,#0fb653)] px-2 text-[12px] font-black text-white shadow-[0_8px_22px_rgba(16,190,88,0.24)] hover:bg-[#14c75d]"
+                  className="h-9 rounded-[var(--app-radius-md)] bg-[var(--app-cta-gradient)] px-2 text-xs font-black text-[var(--app-on-accent)] shadow-[var(--app-shadow-cta)] hover:bg-[var(--app-success-strong)]"
                   onClick={() => void runMark("owned")}
                 >
                   <CheckCircle2Icon className="size-4" />
@@ -404,7 +377,7 @@ export function BuscaTab({ session }: Props) {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-9 rounded-2xl border-white/45 bg-black/24 px-2 text-[12px] font-black text-white hover:bg-white/12 hover:text-white"
+                  className="h-9 rounded-[var(--app-radius-md)] border-white/45 bg-[var(--app-scrim)] px-2 text-xs font-black text-white hover:bg-white/12 hover:text-white"
                   onClick={() => void runMark("duplicate")}
                 >
                   <Repeat2Icon className="size-4" />
