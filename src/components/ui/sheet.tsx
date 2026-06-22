@@ -39,14 +39,18 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  overlayPointerEvents = "auto",
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
+  overlayPointerEvents?: "auto" | "none"
 }) {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay
+        className={overlayPointerEvents === "none" ? "pointer-events-none" : undefined}
+      />
       <SheetPrimitive.Popup
         data-slot="sheet-content"
         data-side={side}
