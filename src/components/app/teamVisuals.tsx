@@ -100,11 +100,51 @@ export function getTeamTheme(sectionId: string) {
   return TEAM_THEMES[sectionId] ?? DEFAULT_TEAM_THEME;
 }
 
+/** Near-black / white inks used as the readable foreground on a team color. */
+const TEAM_INK_DARK = "#101010";
+const TEAM_INK_LIGHT = "#ffffff";
+
+function channelToLinear(value: number): number {
+  const c = value / 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+/** WCAG relative luminance (0 = black, 1 = white) for a #rrggbb / #rgb color. */
+function relativeLuminance(hex: string): number {
+  let value = hex.trim().replace(/^#/, "");
+  if (value.length === 3) {
+    value = value
+      .split("")
+      .map((ch) => ch + ch)
+      .join("");
+  }
+  if (value.length !== 6) return 0;
+  const r = channelToLinear(parseInt(value.slice(0, 2), 16));
+  const g = channelToLinear(parseInt(value.slice(2, 4), 16));
+  const b = channelToLinear(parseInt(value.slice(4, 6), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * A11Y: returns a readable foreground ink for text/icons that sit on a team's
+ * primary color. White team primaries (ENG, JPN, KOR), yellows (COL, ECU) and
+ * light blues (ARG) get a near-black ink; dark primaries get white — both meet
+ * WCAG AA far better than the previous always-white text. Picks whichever of
+ * black/white yields the higher contrast ratio against `theme.primary`.
+ */
+export function getTeamInk(theme: TeamTheme): string {
+  const lum = relativeLuminance(theme.primary);
+  const contrastWithBlack = (lum + 0.05) / 0.05;
+  const contrastWithWhite = 1.05 / (lum + 0.05);
+  return contrastWithBlack >= contrastWithWhite ? TEAM_INK_DARK : TEAM_INK_LIGHT;
+}
+
 export function sectionStyle(theme: TeamTheme): ThemeStyle {
   return {
     "--team-primary": theme.primary,
     "--team-secondary": theme.secondary,
     "--team-accent": theme.accent,
+    "--team-ink": getTeamInk(theme),
     backgroundColor: theme.primary,
     borderColor: theme.accent,
   };
@@ -115,6 +155,7 @@ export function slotStyle(theme: TeamTheme, owned: boolean): ThemeStyle {
   return {
     "--slot-paper": theme.paper ?? "#fff4fb",
     "--slot-ink": theme.ink ?? "#4d5360",
+    "--team-ink": getTeamInk(theme),
     backgroundColor: slotColor,
     borderColor: owned ? "#d6b45d" : "rgba(255, 255, 255, 0.34)",
   };

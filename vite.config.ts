@@ -12,4 +12,24 @@ export default defineConfig({
       "@convex": path.resolve(__dirname, "./convex"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split large vendors out of the app entry for better long-term caching.
+        // rolldown-vite only accepts the function form of manualChunks.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (
+            id.includes("node_modules/react-dom") ||
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/scheduler")
+          ) {
+            return "react";
+          }
+          if (id.includes("node_modules/qrcode.react")) return "qr";
+          if (id.includes("node_modules/convex")) return "convex";
+        },
+      },
+    },
+  },
 });

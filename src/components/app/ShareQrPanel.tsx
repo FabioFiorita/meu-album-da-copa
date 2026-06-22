@@ -44,19 +44,19 @@ export function ShareQrPanel({
         />
       </div>
       <div className="flex max-w-[19rem] flex-col gap-1">
-        <h3 className="text-[16px] font-black leading-tight text-[var(--app-dialog-text)]">
+        <h3 className="text-base font-black leading-tight text-[var(--app-dialog-text)]">
           {title}
         </h3>
-        <p className="text-[12px] font-semibold leading-relaxed text-[var(--app-muted-text)]">
+        <p className="text-sm font-semibold leading-relaxed text-[var(--app-muted-text)]">
           {description}
         </p>
       </div>
       {rawLabel && rawValue && (
         <div className="w-full rounded-2xl border border-[var(--app-border-soft)] bg-[var(--app-field-bg)] p-3 text-left">
-          <p className="text-[10px] font-black uppercase leading-none tracking-normal text-[var(--app-muted-text)]">
+          <p className="text-xs font-black uppercase leading-none tracking-normal text-[var(--app-muted-text)]">
             {rawLabel}
           </p>
-          <p className="mt-2 break-all font-mono text-[11px] font-bold leading-relaxed text-[var(--app-dialog-text)]">
+          <p className="mt-2 break-all font-mono text-xs font-bold leading-relaxed text-[var(--app-dialog-text)]">
             {rawValue}
           </p>
         </div>

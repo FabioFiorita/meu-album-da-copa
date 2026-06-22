@@ -10,17 +10,7 @@ export type MissingPayloadV1 = {
   missingKeys: string[];
 };
 
-export type DuplicatesPayloadV1 = {
-  type: "duplicates";
-  version: 1;
-  templateId: AlbumTemplateId;
-  albumCode: string;
-  generatedAt: number;
-  duplicates: Array<{ key: string; quantity: number }>;
-};
-
 const MISSING_PREFIX = "FIGUS_MISSING_V1.";
-const DUPES_PREFIX = "FIGUS_DUPES_V1.";
 
 function utf8ToBase64Url(json: string): string {
   const bytes = new TextEncoder().encode(json);
@@ -48,10 +38,6 @@ export function encodeMissingPayloadV1(data: MissingPayloadV1): string {
   return MISSING_PREFIX + utf8ToBase64Url(JSON.stringify(data));
 }
 
-export function encodeDuplicatesPayloadV1(data: DuplicatesPayloadV1): string {
-  return DUPES_PREFIX + utf8ToBase64Url(JSON.stringify(data));
-}
-
 export function decodeMissingPayloadV1(raw: string): MissingPayloadV1 {
   const t = raw.trim();
   if (!t.startsWith(MISSING_PREFIX)) throw appError("INVALID_SHARE_PAYLOAD");
@@ -76,34 +62,6 @@ export function decodeMissingPayloadV1(raw: string): MissingPayloadV1 {
   return parsed as MissingPayloadV1;
 }
 
-export function decodeDuplicatesPayloadV1(raw: string): DuplicatesPayloadV1 {
-  const t = raw.trim();
-  if (!t.startsWith(DUPES_PREFIX)) throw appError("INVALID_SHARE_PAYLOAD");
-  const b64 = t.slice(DUPES_PREFIX.length);
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(base64UrlToUtf8(b64)) as DuplicatesPayloadV1;
-  } catch {
-    throw appError("INVALID_SHARE_PAYLOAD");
-  }
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    (parsed as DuplicatesPayloadV1).type !== "duplicates" ||
-    (parsed as DuplicatesPayloadV1).version !== 1 ||
-    (parsed as DuplicatesPayloadV1).templateId !== "wc2026" ||
-    typeof (parsed as DuplicatesPayloadV1).albumCode !== "string" ||
-    !Array.isArray((parsed as DuplicatesPayloadV1).duplicates)
-  ) {
-    throw appError("INVALID_SHARE_PAYLOAD");
-  }
-  return parsed as DuplicatesPayloadV1;
-}
-
 export function isMissingPayloadRaw(raw: string): boolean {
   return raw.trim().startsWith(MISSING_PREFIX);
-}
-
-export function isDupesPayloadRaw(raw: string): boolean {
-  return raw.trim().startsWith(DUPES_PREFIX);
 }

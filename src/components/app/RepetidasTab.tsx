@@ -1,18 +1,30 @@
-import { useMutation, useQuery } from "convex/react";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   CopyIcon,
   FlipHorizontalIcon,
-  MinusIcon,
-  PlusIcon,
   QrCodeIcon,
-  SearchIcon,
   Share2Icon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  memo,
+  type MouseEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
-import { api } from "../../../convex/_generated/api";
+import {
+  CountStepper,
+  EmptyState,
+  SearchField,
+  StickerSlot,
+  TabHeaderCard,
+} from "@/components/album";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,21 +41,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { useAlbumSnapshot } from "@/hooks/useAlbumSnapshot";
+import { useStickerActions } from "@/hooks/useStickerActions";
 import type { AlbumSession } from "@/lib/albumSession";
 import { copyText } from "@/lib/clipboard";
 import { errorMessage } from "@/lib/errors";
-import { encodeDuplicatesPayloadV1 } from "@/lib/sharePayloads";
 import { buildTradeCompareUrl } from "@/lib/shareLinks";
 import { normalizeAlbumCode } from "@convex/lib/access";
-import { WC_2026_TEMPLATE } from "@convex/lib/templates";
+import {
+  type AlbumSectionTemplate,
+  WC_2026_TEMPLATE,
+} from "@convex/lib/templates";
 import {
   getTeamTheme,
   SectionIcon,
   sectionStyle,
-  slotStyle,
+  type TeamTheme,
 } from "./teamVisuals";
 import { TeamBackgroundForms } from "./TeamBackgroundForms";
-import { ShareQrPanel } from "./ShareQrPanel";
+
+const ShareQrPanel = lazy(() =>
+  import("./ShareQrPanel").then((m) => ({ default: m.ShareQrPanel })),
+);
+
+function QrPanelFallback() {
+  return (
+    <div className="flex justify-center py-10">
+      <Spinner className="size-6 text-[var(--app-gold)]" />
+      <span className="sr-only">Carregando QR…</span>
+    </div>
+  );
+}
 
 type Props = { session: AlbumSession };
 
@@ -68,17 +97,190 @@ function formatSectionLine(sectionId: string, rows: DupRow[]): string {
   return `${sectionId}: ${sorted.map((r) => r.number).join(", ")}`;
 }
 
+type DuplicateCellProps = {
+  stickerKey: string;
+  sectionId: string;
+  number: string;
+  count: number;
+  theme: TeamTheme;
+  onDelta: (stickerKey: string, delta: number) => void;
+};
+
+/** A single repetida: the team-colored slot plus its −/+ count stepper. */
+const DuplicateCell = memo(function DuplicateCell({
+  stickerKey,
+  sectionId,
+  number,
+  count,
+  theme,
+  onDelta,
+}: DuplicateCellProps) {
+  const handleDecrement = useCallback(
+    () => onDelta(stickerKey, -1),
+    [onDelta, stickerKey],
+  );
+  const handleIncrement = useCallback(
+    () => onDelta(stickerKey, 1),
+    [onDelta, stickerKey],
+  );
+  const extras = Math.max(0, count - 1);
+
+  return (
+    <div className="mx-auto flex w-full max-w-[8.5rem] flex-col gap-1.5">
+      <StickerSlot
+        sectionId={sectionId}
+        number={number}
+        theme={theme}
+        owned={false}
+        missing={false}
+        duplicateCount={extras}
+      />
+      <CountStepper
+        className="w-full justify-between"
+        count={extras}
+        min={0}
+        onDecrement={handleDecrement}
+        onIncrement={handleIncrement}
+        decrementLabel={`Menos uma repetida de ${sectionId} ${number}`}
+        incrementLabel={`Mais uma repetida de ${sectionId} ${number}`}
+      />
+    </div>
+  );
+});
+
+type RepetidasSectionProps = {
+  section: AlbumSectionTemplate;
+  rows: DupRow[];
+  isExpanded: boolean;
+  isClosing: boolean;
+  onToggle: (sectionId: string, isOpen: boolean) => void;
+  onCopySection: (sectionId: string, rows: DupRow[]) => void;
+  onDelta: (stickerKey: string, delta: number) => void;
+};
+
+/** Custom country accordion row: team-colored header + animated dup panel. */
+const RepetidasSection = memo(function RepetidasSection({
+  section,
+  rows,
+  isExpanded,
+  isClosing,
+  onToggle,
+  onCopySection,
+  onDelta,
+}: RepetidasSectionProps) {
+  const theme = getTeamTheme(section.id);
+  const totalExtras = rows.reduce((sum, r) => sum + (r.count - 1), 0);
+  const summary = rows.map((r) => r.number).join(", ");
+  const title = section.title !== section.id ? section.title : "";
+  const shouldRenderRows = isExpanded || isClosing;
+
+  const handleToggle = useCallback(
+    () => onToggle(section.id, isExpanded),
+    [onToggle, section.id, isExpanded],
+  );
+  const handleCopy = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      onCopySection(section.id, rows);
+    },
+    [onCopySection, section.id, rows],
+  );
+
+  return (
+    <section
+      data-expanded={isExpanded ? "true" : "false"}
+      style={sectionStyle(theme)}
+      className="team-card relative overflow-hidden rounded-[var(--app-radius-lg)] border-2 px-2 shadow-[var(--app-shadow-md)]"
+    >
+      {shouldRenderRows && <TeamBackgroundForms />}
+      <button
+        type="button"
+        aria-expanded={isExpanded}
+        onClick={handleToggle}
+        className="relative z-10 flex min-h-12 w-full items-center gap-2 px-1.5 py-2 text-left text-[var(--team-ink)] outline-none focus-visible:ring-2 focus-visible:ring-white/35"
+      >
+        <span className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[var(--app-shadow-sm)]">
+            <SectionIcon section={section} />
+          </span>
+          <span className="flex min-w-0 items-baseline gap-2">
+            <span className="country-name-outline text-base font-black leading-none tracking-normal text-[var(--team-ink)]">
+              {section.id}
+            </span>
+            {title && (
+              <span className="country-name-outline hidden truncate text-xs font-bold leading-none text-[var(--team-ink)] min-[380px]:inline">
+                {title}
+              </span>
+            )}
+          </span>
+        </span>
+        <Badge className="mr-1 h-7 rounded-full border border-white/30 bg-[var(--app-scrim)] px-2.5 text-xs font-black text-white shadow-none">
+          x{totalExtras}
+        </Badge>
+        {isExpanded ? (
+          <ChevronUpIcon className="size-4 shrink-0 text-[var(--team-ink)]" />
+        ) : (
+          <ChevronDownIcon className="size-4 shrink-0 text-[var(--team-ink)]" />
+        )}
+      </button>
+
+      {shouldRenderRows && (
+        <div
+          className="country-stickers-panel relative z-10"
+          data-state={isExpanded ? "open" : "closing"}
+        >
+          <div className="country-stickers-panel-inner pb-4 pt-1">
+            <div className="mb-3 flex items-center justify-between gap-2 px-1">
+              <p className="country-name-outline min-w-0 truncate text-xs font-black leading-none text-[var(--team-ink)] tabular-nums">
+                {summary}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="repetidas-copy-button h-8 shrink-0 rounded-xl px-2 text-xs font-black text-white hover:bg-white/12 hover:text-white"
+                onClick={handleCopy}
+              >
+                <CopyIcon className="size-3.5" />
+                Copiar
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 px-1">
+              {rows.map((r) => (
+                <DuplicateCell
+                  key={r.key}
+                  stickerKey={r.key}
+                  sectionId={r.sectionId}
+                  number={r.number}
+                  count={r.count}
+                  theme={theme}
+                  onDelta={onDelta}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+});
+
 export function RepetidasTab({ session }: Props) {
-  const snapshot = useQuery(api.albums.getPrivateSnapshot, {
-    code: session.code,
-    writeKey: session.writeKey,
-  });
-  const addCopies = useMutation(api.stickers.addCopies);
+  const { snapshot, isLoading } = useAlbumSnapshot();
+  const actions = useStickerActions(session);
   const [q, setQ] = useState("");
   const [shareTradeQrOpen, setShareTradeQrOpen] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [closingSections, setClosingSections] = useState<string[]>([]);
   const closeTimers = useRef<Record<string, number>>({});
+
+  // Keep a stable `onDelta` for the memoized section list by reading the latest
+  // (non-stable) optimistic action through a ref synced after each render.
+  const actionsRef = useRef(actions);
+  useEffect(() => {
+    actionsRef.current = actions;
+  });
 
   useEffect(() => {
     const timers = closeTimers.current;
@@ -128,80 +330,29 @@ export function RepetidasTab({ session }: Props) {
 
   const totalDupes = snapshot?.album.duplicateCount ?? 0;
 
-  async function onDelta(key: string, delta: number) {
-    try {
-      await addCopies({
-        code: session.code,
-        writeKey: session.writeKey,
-        stickerKey: key,
-        delta,
-      });
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
+  const onDelta = useCallback((key: string, delta: number) => {
+    void (async () => {
+      try {
+        await actionsRef.current.applyDelta(key, delta);
+      } catch (e) {
+        toast.error(errorMessage(e));
+      }
+    })();
+  }, []);
 
-  async function copySection(sectionId: string) {
-    const rows = dupBySection.get(sectionId);
-    if (!rows || rows.length === 0) return;
-    try {
-      await copyText(formatSectionLine(sectionId, rows));
-      toast.success(`${sectionId} copiado.`);
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
+  const onCopySection = useCallback((sectionId: string, rows: DupRow[]) => {
+    if (rows.length === 0) return;
+    void (async () => {
+      try {
+        await copyText(formatSectionLine(sectionId, rows));
+        toast.success(`${sectionId} copiado.`);
+      } catch (e) {
+        toast.error(errorMessage(e));
+      }
+    })();
+  }, []);
 
-  async function copyAllAsText() {
-    if (dupBySection.size === 0) return;
-    const lines: string[] = [];
-    for (const section of WC_2026_TEMPLATE.sections) {
-      const rows = dupBySection.get(section.id);
-      if (rows) lines.push(formatSectionLine(section.id, rows));
-    }
-    try {
-      await copyText(lines.join("\n"));
-      toast.success("Lista de repetidas copiada.");
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
-
-  async function exportEncodedDupes() {
-    if (!snapshot) return;
-    const duplicates: Array<{ key: string; quantity: number }> = [];
-    for (const s of snapshot.stickers) {
-      if (s.count <= 1) continue;
-      duplicates.push({ key: s.key, quantity: s.count - 1 });
-    }
-    const payload = encodeDuplicatesPayloadV1({
-      type: "duplicates",
-      version: 1,
-      templateId: "wc2026",
-      albumCode: session.code,
-      generatedAt: Date.now(),
-      duplicates,
-    });
-    try {
-      await copyText(payload);
-      toast.success("Payload FIGUS_DUPLICATES copiado.");
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
-
-  async function sharePublic() {
-    try {
-      await copyText(normalizeAlbumCode(session.code));
-      toast.success("Código público copiado.");
-    } catch (e) {
-      toast.error(errorMessage(e));
-    }
-  }
-
-  function toggleSection(sectionId: string) {
-    const isOpen = openSections.includes(sectionId);
-
+  const onToggle = useCallback((sectionId: string, isOpen: boolean) => {
     if (isOpen) {
       setOpenSections((current) => current.filter((id) => id !== sectionId));
       setClosingSections((current) =>
@@ -230,61 +381,76 @@ export function RepetidasTab({ session }: Props) {
     setOpenSections((current) =>
       current.includes(sectionId) ? current : [...current, sectionId],
     );
+  }, []);
+
+  async function copyAllAsText() {
+    if (dupBySection.size === 0) return;
+    const lines: string[] = [];
+    for (const section of WC_2026_TEMPLATE.sections) {
+      const rows = dupBySection.get(section.id);
+      if (rows) lines.push(formatSectionLine(section.id, rows));
+    }
+    try {
+      await copyText(lines.join("\n"));
+      toast.success("Lista de repetidas copiada.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
+
+  async function sharePublic() {
+    try {
+      await copyText(normalizeAlbumCode(session.code));
+      toast.success("Código público copiado.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
   }
 
   return (
     <div className="repetidas-tab mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-24 pt-4">
-      <section className="rounded-[1.35rem] border-2 border-[#d6b45d] bg-[#1b1b1b]/95 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]">
-        <div className="flex items-start gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-[#2b2619] text-[#d6b45d]">
-            <FlipHorizontalIcon className="size-6" />
-          </div>
-          <div className="min-w-0 flex-1 pt-0.5">
-            <h1 className="truncate text-[18px] font-semibold leading-tight tracking-normal text-white">
-              Repetidas
-            </h1>
-            <p className="mt-1 text-[13px] font-semibold text-white/72">
-              {totalDupes} figurinha{totalDupes === 1 ? "" : "s"} para troca
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              type="button"
-              aria-label="Compartilhar repetidas"
-              className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[#d6b45d]/55 bg-black/25 text-[#d6b45d] outline-none transition-colors hover:bg-[#d6b45d]/10 hover:text-[#f4d77c] focus-visible:ring-2 focus-visible:ring-[#d6b45d]/35"
-            >
-              <Share2Icon />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="border-[#d6b45d]/35 bg-[#171717] text-white"
-            >
-              <DropdownMenuItem onClick={() => void sharePublic()}>
-                Código público (comparação)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void exportEncodedDupes()}>
-                Payload FIGUS_DUPLICATES
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShareTradeQrOpen(true)}>
-                <QrCodeIcon />
-                QR para trocar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <div className="flex flex-col gap-3">
+        <TabHeaderCard
+          icon={FlipHorizontalIcon}
+          title="Repetidas"
+          subtitle={`${totalDupes} figurinha${totalDupes === 1 ? "" : "s"} para troca`}
+          action={
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                type="button"
+                aria-label="Compartilhar repetidas"
+                className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[var(--app-button-muted)] text-[var(--app-gold-accent)] outline-none transition-colors hover:bg-[var(--app-button-muted-hover)] hover:text-[var(--app-gold-strong)] focus-visible:ring-2 focus-visible:ring-[var(--app-border)]"
+              >
+                <Share2Icon />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)]"
+              >
+                <DropdownMenuItem onClick={() => void sharePublic()}>
+                  Código público (comparação)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShareTradeQrOpen(true)}>
+                  <QrCodeIcon />
+                  QR para trocar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
 
         <Button
           type="button"
           size="lg"
           variant="outline"
-          className="mt-4 h-12 w-full rounded-2xl border-[#d6b45d]/65 bg-black/20 text-[15px] font-black text-[#d6b45d] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[#d6b45d]/10 hover:text-[#f4d77c]"
+          className="h-12 w-full rounded-2xl border-[var(--app-border-strong)] bg-[var(--app-button-muted)] text-base font-black text-[var(--app-gold-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[var(--app-button-muted-hover)] hover:text-[var(--app-gold-strong)]"
           onClick={() => void copyAllAsText()}
           disabled={dupBySection.size === 0}
         >
           <CopyIcon />
           Copiar tudo
         </Button>
-      </section>
+      </div>
 
       <Dialog open={shareTradeQrOpen} onOpenChange={setShareTradeQrOpen}>
         <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto border-[var(--app-border)] bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border)]">
@@ -295,179 +461,53 @@ export function RepetidasTab({ session }: Props) {
               seu álbum.
             </DialogDescription>
           </DialogHeader>
-          <ShareQrPanel
-            value={buildTradeCompareUrl(session.code)}
-            title="Comparar comigo"
-            description="Ao escanear, o app abre direto na aba Trocar com seu código público preenchido."
-            copyLabel="Copiar link"
-            rawLabel="Código público"
-            rawValue={normalizeAlbumCode(session.code)}
-          />
+          <Suspense fallback={<QrPanelFallback />}>
+            <ShareQrPanel
+              value={buildTradeCompareUrl(session.code)}
+              title="Comparar comigo"
+              description="Ao escanear, o app abre direto na aba Trocar com seu código público preenchido."
+              copyLabel="Copiar link"
+              rawLabel="Código público"
+              rawValue={normalizeAlbumCode(session.code)}
+            />
+          </Suspense>
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="search-dup"
-          className="pl-1 text-[13px] font-black leading-none tracking-normal text-white"
-        >
-          Buscar países
-        </label>
-        <div className="flex h-14 items-center gap-3 rounded-2xl border-2 border-[#d6b45d]/75 bg-[#171717]/95 px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-          <SearchIcon className="size-5 shrink-0 text-[#d6b45d]" />
-          <input
-            id="search-dup"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar países..."
-            autoComplete="off"
-            className="h-full min-w-0 flex-1 bg-transparent text-base font-semibold text-white outline-none placeholder:text-white/45"
-          />
-        </div>
-      </div>
+      <SearchField
+        id="search-dup"
+        label="Buscar países"
+        value={q}
+        onChange={setQ}
+        placeholder="Buscar países..."
+      />
 
-      {!snapshot ? (
+      {isLoading ? (
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-14 rounded-2xl bg-[#171717]" />
-          <Skeleton className="h-14 rounded-2xl bg-[#171717]" />
-          <Skeleton className="h-48 rounded-[1.15rem] bg-[#171717]" />
+          <Skeleton className="h-14 rounded-2xl bg-[var(--app-surface)]" />
+          <Skeleton className="h-14 rounded-2xl bg-[var(--app-surface)]" />
+          <Skeleton className="h-48 rounded-[var(--app-radius-lg)] bg-[var(--app-surface)]" />
         </div>
       ) : sections.length === 0 ? (
-        <div className="rounded-[1.35rem] border-2 border-[#d6b45d]/65 bg-[#171717]/95 px-5 py-8 text-center shadow-[0_14px_36px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)]">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-[#d6b45d]/50 bg-[#2b2619] text-[#d6b45d]">
-            <FlipHorizontalIcon className="size-7" />
-          </div>
-          <h2 className="mt-4 text-[18px] font-semibold leading-tight text-white">
-            Nenhuma repetida
-          </h2>
-          <p className="mx-auto mt-2 max-w-[280px] text-[13px] font-semibold leading-relaxed text-white/68">
-            Quando tiver figurinhas sobrando, elas aparecem aqui.
-          </p>
-        </div>
+        <EmptyState
+          icon={FlipHorizontalIcon}
+          title="Nenhuma repetida"
+          description="Quando tiver figurinhas sobrando, elas aparecem aqui."
+        />
       ) : (
         <div className="flex flex-col gap-2">
-          {sections.map((sec) => {
-            const rows = dupBySection.get(sec.id) ?? [];
-            const totalExtras = rows.reduce((s, r) => s + (r.count - 1), 0);
-            const summary = rows.map((r) => r.number).join(", ");
-            const title = sec.title !== sec.id ? sec.title : "";
-            const theme = getTeamTheme(sec.id);
-            const isExpanded = openSections.includes(sec.id);
-            const isClosing = closingSections.includes(sec.id);
-            const shouldRenderRows = isExpanded || isClosing;
-
-            return (
-              <section
-                key={sec.id}
-                data-expanded={isExpanded ? "true" : "false"}
-                style={sectionStyle(theme)}
-                className="team-card relative overflow-hidden rounded-[1.15rem] border-2 px-2 shadow-[0_6px_16px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]"
-              >
-                {shouldRenderRows && <TeamBackgroundForms />}
-                <button
-                  type="button"
-                  aria-expanded={isExpanded}
-                  onClick={() => toggleSection(sec.id)}
-                  className="relative z-10 flex min-h-12 w-full items-center gap-2 px-1.5 py-2 text-left text-white outline-none focus-visible:ring-2 focus-visible:ring-white/35"
-                >
-                  <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                    <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
-                      <SectionIcon section={sec} />
-                    </span>
-                    <span className="flex min-w-0 items-baseline gap-2">
-                      <span className="country-name-outline text-[15px] font-black leading-none tracking-normal text-white">
-                        {sec.id}
-                      </span>
-                      {title && (
-                        <span className="country-name-outline hidden truncate text-[11px] font-bold leading-none text-white/78 min-[380px]:inline">
-                          {title}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                  <Badge className="mr-1 h-7 rounded-full border border-white/30 bg-black/42 px-2.5 text-[12px] font-black text-white shadow-none">
-                    x{totalExtras}
-                  </Badge>
-                  {isExpanded ? (
-                    <ChevronUpIcon className="size-4 shrink-0 text-white" />
-                  ) : (
-                    <ChevronDownIcon className="size-4 shrink-0 text-white" />
-                  )}
-                </button>
-
-                {shouldRenderRows && (
-                  <div
-                    className="country-stickers-panel relative z-10"
-                    data-state={isExpanded ? "open" : "closing"}
-                  >
-                    <div className="country-stickers-panel-inner pb-4 pt-1">
-                      <div className="mb-3 flex items-center justify-between gap-2 px-1">
-                        <p className="country-name-outline min-w-0 truncate text-[11px] font-black leading-none text-white/86 tabular-nums">
-                          {summary}
-                        </p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="repetidas-copy-button h-8 shrink-0 rounded-xl px-2 text-[11px] font-black text-white hover:bg-white/12 hover:text-white"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void copySection(sec.id);
-                          }}
-                        >
-                          <CopyIcon className="size-3.5" />
-                          Copiar
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2 px-1">
-                        {rows.map((r) => (
-                          <div key={r.key} className="min-w-0">
-                            <div
-                              style={slotStyle(theme, true)}
-                              className="sticker-slot-lite relative flex aspect-[3/4] w-full overflow-hidden rounded-xl border-2 text-[12px] font-black leading-none tracking-normal shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
-                            >
-                              <span
-                                aria-hidden="true"
-                                className="sticker-slot-label"
-                              >
-                                <span>{sec.id}</span>
-                                <span>{r.number}</span>
-                              </span>
-                              <Badge className="absolute bottom-1 right-1 z-20 h-5 rounded-full border border-white/20 bg-black/55 px-1.5 text-[10px] font-black text-white shadow-none">
-                                x{r.count - 1}
-                              </Badge>
-                            </div>
-                            <div className="mt-1.5 grid grid-cols-2 gap-1">
-                              <Button
-                                type="button"
-                                size="icon-sm"
-                                variant="outline"
-                                className="h-8 w-full rounded-xl border-white/35 bg-black/24 text-white hover:bg-white/12 hover:text-white"
-                                aria-label="Menos uma repetida"
-                                onClick={() => void onDelta(r.key, -1)}
-                              >
-                                <MinusIcon className="size-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="icon-sm"
-                                className="h-8 w-full rounded-xl bg-[#13c95f] text-white shadow-none hover:bg-[#14b957]"
-                                aria-label="Mais uma repetida"
-                                onClick={() => void onDelta(r.key, 1)}
-                              >
-                                <PlusIcon className="size-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </section>
-            );
-          })}
+          {sections.map((sec) => (
+            <RepetidasSection
+              key={sec.id}
+              section={sec}
+              rows={dupBySection.get(sec.id) ?? []}
+              isExpanded={openSections.includes(sec.id)}
+              isClosing={closingSections.includes(sec.id)}
+              onToggle={onToggle}
+              onCopySection={onCopySection}
+              onDelta={onDelta}
+            />
+          ))}
         </div>
       )}
     </div>

@@ -5,12 +5,11 @@ import {
   SettingsIcon,
   TrophyIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { AlbumTab } from "./AlbumTab";
-import { BuscaTab } from "./BuscaTab";
-import { ConfigTab } from "./ConfigTab";
-import { RepetidasTab } from "./RepetidasTab";
-import { TrocarTab } from "./TrocarTab";
+import { AlbumSnapshotProvider } from "@/hooks/useAlbumSnapshot";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { Spinner } from "@/components/ui/spinner";
 import type { AlbumSession } from "@/lib/albumSession";
 import {
   applyAppTheme,
@@ -19,6 +18,32 @@ import {
   saveAppTheme,
 } from "@/lib/appTheme";
 import { cn } from "@/lib/utils";
+
+const RepetidasTab = lazy(() =>
+  import("./RepetidasTab").then((m) => ({ default: m.RepetidasTab })),
+);
+const TrocarTab = lazy(() =>
+  import("./TrocarTab").then((m) => ({ default: m.TrocarTab })),
+);
+const BuscaTab = lazy(() =>
+  import("./BuscaTab").then((m) => ({ default: m.BuscaTab })),
+);
+const ConfigTab = lazy(() =>
+  import("./ConfigTab").then((m) => ({ default: m.ConfigTab })),
+);
+
+function TabFallback() {
+  return (
+    <div
+      className="flex min-h-[40vh] w-full items-center justify-center"
+      role="status"
+      aria-live="polite"
+    >
+      <Spinner className="size-7 text-[var(--app-gold)]" />
+      <span className="sr-only">Carregando…</span>
+    </div>
+  );
+}
 
 const tabs = [
   { id: "album", label: "Álbum", Icon: TrophyIcon },
@@ -51,6 +76,7 @@ export function MainLayout({
 }: Props) {
   const [tab, setTab] = useState<TabId>(initialTab ?? "album");
   const [theme, setThemeState] = useState<AppTheme>(() => readStoredTheme());
+  const isOnline = useOnlineStatus();
 
   useEffect(() => {
     applyAppTheme(theme);
@@ -84,39 +110,55 @@ export function MainLayout({
         <div className="mx-auto flex w-full max-w-[430px] items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-strong)] shadow-[0_0_18px_rgba(214,180,93,0.12)]">
             <img
-              src={`${import.meta.env.BASE_URL}logo.png`}
+              src={`${import.meta.env.BASE_URL}logo-64.webp`}
               alt="Meu álbum da Copa"
               width={28}
               height={28}
               className="size-7 rounded-lg object-cover object-center"
             />
           </span>
-          <span className="truncate text-[15px] font-black leading-none tracking-normal text-[var(--app-text)]">
+          <span className="truncate text-base font-black leading-none tracking-normal text-[var(--app-text)]">
             Meu álbum da Copa
           </span>
         </div>
       </header>
 
-      <div
-        data-app-scroll-container
-        className="relative z-10 min-h-0 flex-1 overflow-auto px-4 sm:px-6"
-      >
-        {tab === "album" && <AlbumTab session={session} />}
-        {tab === "dupes" && <RepetidasTab session={session} />}
-        {tab === "trade" && (
-          <TrocarTab session={session} initialOtherCode={initialTradeCode} />
-        )}
-        {tab === "search" && <BuscaTab session={session} />}
-        {tab === "config" && (
-          <ConfigTab
-            session={session}
-            leaveLocal={leaveLocal}
-            updateSessionKeys={updateSessionKeys}
-            theme={theme}
-            setTheme={setTheme}
-          />
-        )}
-      </div>
+      {!isOnline && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="relative z-20 shrink-0 border-b border-[var(--app-border-soft)] bg-[var(--destructive)]/10 px-4 py-2 text-2xs font-bold text-[var(--app-text)] sm:px-6"
+        >
+          <p className="mx-auto w-full max-w-[430px] leading-snug">
+            Você está offline — as alterações podem não salvar.
+          </p>
+        </div>
+      )}
+
+      <AlbumSnapshotProvider session={session}>
+        <main
+          data-app-scroll-container
+          className="relative z-10 min-h-0 flex-1 overflow-auto px-4 sm:px-6"
+        >
+          {tab === "album" && <AlbumTab session={session} />}
+          <Suspense fallback={<TabFallback />}>
+            {tab === "dupes" && <RepetidasTab session={session} />}
+            {tab === "trade" && (
+              <TrocarTab session={session} initialOtherCode={initialTradeCode} />
+            )}
+            {tab === "search" && <BuscaTab session={session} />}
+            {tab === "config" && (
+              <ConfigTab
+                session={session}
+                leaveLocal={leaveLocal}
+                updateSessionKeys={updateSessionKeys}
+                theme={theme}
+                setTheme={setTheme}
+              />
+            )}
+          </Suspense>
+        </main>
+      </AlbumSnapshotProvider>
 
       <footer className="app-footer relative z-30 shrink-0 border-t border-[var(--app-border-soft)] bg-[var(--app-chrome)] px-3 pb-[env(safe-area-inset-bottom,0px)] pt-2 backdrop-blur sm:px-4">
         <nav
@@ -138,7 +180,7 @@ export function MainLayout({
             >
               <span className="flex h-full flex-col items-center justify-center gap-1">
                 <Icon className="size-[18px]" />
-                <span className="text-[10px] font-black leading-none tracking-normal">
+                <span className="text-xs font-black leading-none tracking-normal">
                   {label}
                 </span>
               </span>
