@@ -218,7 +218,7 @@ const SectionCard = memo(function SectionCard({
       type="button"
       onClick={handleClick}
       aria-label={`${section.id} ${section.title} ${ownedCount}/${section.total}`}
-      className="min-h-[5.35rem] rounded-[var(--app-radius-lg)] border border-[var(--app-border)] bg-[var(--app-surface)] p-2 text-left shadow-[var(--app-shadow-md)] outline-none transition-colors hover:border-[var(--app-border-strong)] hover:bg-[var(--app-surface-elevated)] focus-visible:ring-2 focus-visible:ring-[var(--app-border-soft)]"
+      className="min-h-[5.35rem] touch-manipulation rounded-[var(--app-radius-lg)] border border-[var(--app-border)] bg-[var(--app-surface)] p-2 text-left shadow-[var(--app-shadow-md)] outline-none transition-colors hover:border-[var(--app-border-strong)] hover:bg-[var(--app-surface-elevated)] focus-visible:ring-2 focus-visible:ring-[var(--app-border-soft)]"
     >
       <div className="flex min-w-0 items-start gap-2">
         <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[var(--app-shadow-sm)]">
@@ -274,6 +274,7 @@ function SectionSheet({
     <Sheet open onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="bottom"
+        overlayPointerEvents="none"
         style={sectionStyle(theme)}
         className="team-card album-detail mx-auto flex !h-[78svh] max-h-[48rem] w-[calc(100%-1.25rem)] max-w-[430px] gap-0 overflow-hidden rounded-t-[var(--app-radius-xl)] border-2 p-0 text-white shadow-[0_-18px_42px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.12)]"
       >
@@ -324,7 +325,10 @@ function SectionSheet({
             </div>
           </div>
 
-          <ScrollArea className="album-sticker-scroll-area mt-2 min-h-0 flex-1 px-3 pb-3">
+          <ScrollArea
+            key={section.id}
+            className="album-sticker-scroll-area mt-2 min-h-0 flex-1 px-3 pb-3"
+          >
             <div className="flex flex-col gap-2 pr-2 pb-3">
               {section.stickers.map((st) => (
                 <StickerStatusCard
