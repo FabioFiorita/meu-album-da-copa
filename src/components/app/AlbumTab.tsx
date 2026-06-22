@@ -8,7 +8,7 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,23 @@ export function AlbumTab({ session }: Props) {
         s.id.toLowerCase().includes(qq) || s.title.toLowerCase().includes(qq),
     );
   }, [q]);
+
+  const sectionSummaryById = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!snapshot) return m;
+    for (const section of snapshot.sections) {
+      m.set(section.id, section.ownedCount);
+    }
+    return m;
+  }, [snapshot]);
+
+  const selectSection = useCallback((sectionId: string) => {
+    setSelectedSectionId(sectionId);
+  }, []);
+
+  const closeSection = useCallback(() => {
+    setSelectedSectionId(null);
+  }, []);
 
   async function applyDelta(key: string, delta: number) {
     try {
@@ -159,18 +176,15 @@ export function AlbumTab({ session }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           {filteredSections.map((sec) => {
-            const sectionSummary = snapshot.sections.find(
-              (x) => x.id === sec.id,
-            );
             const ownedCount =
-              sectionSummary?.ownedCount ?? getOwnedCount(sec, countByKey);
+              sectionSummaryById.get(sec.id) ?? getOwnedCount(sec, countByKey);
 
             return (
               <SectionCard
                 key={sec.id}
                 section={sec}
                 ownedCount={ownedCount}
-                onClick={() => setSelectedSectionId(sec.id)}
+                onSelect={selectSection}
               />
             );
           })}
@@ -186,7 +200,7 @@ export function AlbumTab({ session }: Props) {
       <SectionSheet
         section={selectedSection}
         countByKey={countByKey}
-        setSelectedSectionId={setSelectedSectionId}
+        onClose={closeSection}
         onOpenSticker={setOpenKey}
         applyDelta={applyDelta}
       />
@@ -200,23 +214,23 @@ export function AlbumTab({ session }: Props) {
   );
 }
 
-function SectionCard({
+const SectionCard = memo(function SectionCard({
   section,
   ownedCount,
-  onClick,
+  onSelect,
 }: {
   section: SectionTemplate;
   ownedCount: number;
-  onClick: () => void;
+  onSelect: (sectionId: string) => void;
 }) {
   const progress = percentage(ownedCount, section.total);
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => onSelect(section.id)}
       aria-label={`${section.id} ${section.title} ${ownedCount}/${section.total}`}
-      className="min-h-[5.35rem] rounded-2xl border border-[#d6b45d]/45 bg-[#171717]/95 p-2 text-left shadow-[0_8px_22px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.08)] outline-none transition-colors hover:border-[#f4d77c]/70 hover:bg-[#1d1d1d] focus-visible:ring-2 focus-visible:ring-[#d6b45d]/35"
+      className="min-h-[5.35rem] touch-manipulation rounded-2xl border border-[#d6b45d]/45 bg-[#171717]/95 p-2 text-left shadow-[0_8px_22px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.08)] outline-none transition-colors hover:border-[#f4d77c]/70 hover:bg-[#1d1d1d] focus-visible:ring-2 focus-visible:ring-[#d6b45d]/35"
     >
       <div className="flex min-w-0 items-start gap-2">
         <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/45 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.28)]">
@@ -243,18 +257,18 @@ function SectionCard({
       </div>
     </button>
   );
-}
+});
 
 function SectionSheet({
   section,
   countByKey,
-  setSelectedSectionId,
+  onClose,
   onOpenSticker,
   applyDelta,
 }: {
   section: SectionTemplate | null;
   countByKey: Map<string, number>;
-  setSelectedSectionId: (sectionId: string | null) => void;
+  onClose: () => void;
   onOpenSticker: (key: string) => void;
   applyDelta: (key: string, delta: number) => Promise<void>;
 }) {
@@ -269,12 +283,10 @@ function SectionSheet({
   const progress = percentage(ownedCount, section.total);
 
   return (
-    <Sheet
-      open={section !== null}
-      onOpenChange={(open) => !open && setSelectedSectionId(null)}
-    >
+    <Sheet open onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="bottom"
+        overlayPointerEvents="none"
         style={sectionStyle(theme)}
         className="team-card album-detail mx-auto flex !h-[78svh] max-h-[48rem] w-[calc(100%-1.25rem)] max-w-[430px] gap-0 overflow-hidden rounded-t-[1.35rem] border-2 p-0 text-white shadow-[0_-18px_42px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.12)]"
       >
@@ -327,7 +339,10 @@ function SectionSheet({
             </div>
           </div>
 
-          <ScrollArea className="album-sticker-scroll-area mt-2 min-h-0 flex-1 px-3 pb-3">
+          <ScrollArea
+            key={section.id}
+            className="album-sticker-scroll-area mt-2 min-h-0 flex-1 px-3 pb-3"
+          >
             <div className="flex flex-col gap-2 pr-2 pb-3">
             {section.stickers.map((st) => {
               const c = countByKey.get(st.key) ?? 0;
