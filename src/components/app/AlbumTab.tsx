@@ -1,4 +1,10 @@
-import { BookOpenIcon, ChevronRightIcon, ClipboardIcon, SearchIcon } from "lucide-react";
+import {
+  BookOpenIcon,
+  ChevronRightIcon,
+  ClipboardIcon,
+  CopyIcon,
+  SearchIcon,
+} from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -10,6 +16,7 @@ import {
   StickerSlot,
   TabHeaderCard,
 } from "@/components/album";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -23,6 +30,7 @@ import { useAlbumSnapshot, type AlbumSnapshot } from "@/hooks/useAlbumSnapshot";
 import { useStickerActions } from "@/hooks/useStickerActions";
 import { percentage } from "@/lib/albumMath";
 import type { AlbumSession } from "@/lib/albumSession";
+import { copyText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@/lib/errors";
 import { WC_2026_TEMPLATE } from "@convex/lib/templates";
@@ -69,6 +77,18 @@ export function AlbumTab({ session }: Props) {
     }
     return m;
   }, [snapshot]);
+
+  const missingBySection = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const sec of WC_2026_TEMPLATE.sections) {
+      const nums: string[] = [];
+      for (const st of sec.stickers) {
+        if ((countByKey.get(st.key) ?? 0) < 1) nums.push(st.number);
+      }
+      if (nums.length) m.set(sec.id, nums);
+    }
+    return m;
+  }, [countByKey]);
 
   // Server-computed per-section owned/duplicate totals, keyed by section id, so
   // the grid never has to re-scan every sticker (O(n^2)).
@@ -135,6 +155,21 @@ export function AlbumTab({ session }: Props) {
   const openSticker = openKey == null ? null : (stickerByKey.get(openKey) ?? null);
   const openCount = openKey ? (countByKey.get(openKey) ?? 0) : 0;
 
+  async function copyMissingAsText() {
+    if (missingBySection.size === 0) return;
+    const lines: string[] = [];
+    for (const section of WC_2026_TEMPLATE.sections) {
+      const nums = missingBySection.get(section.id);
+      if (nums) lines.push(`${section.id}: ${nums.join(", ")}`);
+    }
+    try {
+      await copyText(lines.join("\n"));
+      toast.success("Lista de faltantes copiada.");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
+
   return (
     <>
       <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4 pb-4 pt-4">
@@ -155,6 +190,18 @@ export function AlbumTab({ session }: Props) {
             </>
           }
         />
+
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="h-12 w-full rounded-2xl border-[var(--app-border-strong)] bg-[var(--app-button-muted)] text-base font-black text-[var(--app-gold-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-[var(--app-button-muted-hover)] hover:text-[var(--app-gold-strong)]"
+          onClick={() => void copyMissingAsText()}
+          disabled={missingBySection.size === 0}
+        >
+          <CopyIcon />
+          Copiar faltantes
+        </Button>
 
         <SearchField
           id="search-sections"
