@@ -140,11 +140,12 @@ export function Onboarding({
   }
 
   return (
-    <div className="h-svh overflow-y-auto bg-[#050606] text-white">
+    <div className="h-svh overflow-y-auto bg-[var(--app-bg)] text-[var(--app-text)]">
       <div
-        className="relative mx-auto flex min-h-svh max-w-[430px] flex-col bg-[#141414] bg-no-repeat shadow-2xl"
+        className="relative mx-auto flex min-h-svh max-w-[430px] flex-col bg-[var(--app-bg)] bg-no-repeat shadow-2xl"
         style={{
-          backgroundImage: "url('/onboarding-copa-2026-background.png')",
+          backgroundImage:
+            "image-set(url('/onboarding-copa-2026-background.webp') type('image/webp'), url('/onboarding-copa-2026-background.png') type('image/png'))",
           backgroundPosition: "top center",
           backgroundSize: "cover",
         }}
@@ -168,11 +169,11 @@ export function Onboarding({
             </p>
           </section>
 
-          <section className="mt-[clamp(1.1rem,2.6svh,1.7rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1rem,2.1svh,1.3rem)] py-[clamp(1rem,2.2svh,1.35rem)] text-center shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.55rem,3.25svh,1.95rem)] leading-none font-semibold tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+          <section className="mt-[clamp(1.1rem,2.6svh,1.7rem)] rounded-[var(--app-radius-xl)] border-[3px] border-[var(--app-border-strong)] bg-[var(--app-surface-elevated)] px-[clamp(1rem,2.1svh,1.3rem)] py-[clamp(1rem,2.2svh,1.35rem)] text-center shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
+            <h2 className="text-[clamp(1.55rem,3.25svh,1.95rem)] leading-none font-semibold tracking-normal text-[var(--app-text)]">
               Criar álbum novo
             </h2>
-            <p className="mx-auto mt-3 max-w-[20.5rem] text-[clamp(0.94rem,1.95svh,1.1rem)] leading-tight text-white">
+            <p className="mx-auto mt-3 max-w-[20.5rem] text-[clamp(0.94rem,1.95svh,1.1rem)] leading-tight text-[var(--app-text)]">
               Gera um código público e uma chave de edição. Quem tiver o código
               completo pode editar o álbum.
             </p>
@@ -180,20 +181,20 @@ export function Onboarding({
               type="button"
               disabled={creating}
               onClick={() => void handleCreate()}
-              className="mt-5 h-[clamp(3rem,5.4svh,3.55rem)] w-full rounded-[0.95rem] border-0 bg-gradient-to-b from-[#13D84D] to-[#06A836] text-[clamp(1.18rem,2.45svh,1.48rem)] font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_8px_16px_rgba(0,0,0,.35)] hover:from-[#13D84D] hover:to-[#06A836]"
+              className="mt-5 h-[clamp(3rem,5.4svh,3.55rem)] w-full rounded-[var(--app-radius-md)] border-0 bg-[image:var(--app-cta-gradient)] text-[clamp(1.18rem,2.45svh,1.48rem)] font-black text-[var(--app-on-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_8px_16px_rgba(0,0,0,.35)]"
             >
               <SoccerBallIcon />
               {creating ? "Criando..." : "Criar álbum"}
             </Button>
           </section>
 
-          <section className="mt-[clamp(0.85rem,2svh,1.25rem)] rounded-[1.25rem] border-[3px] border-[#D5B15E] bg-[#272727]/94 px-[clamp(1.05rem,2.5svh,1.55rem)] py-[clamp(1rem,2.15svh,1.35rem)] shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
-            <h2 className="text-[clamp(1.45rem,3svh,1.85rem)] leading-tight font-semibold tracking-normal text-white drop-shadow-[0_2px_2px_rgba(0,0,0,.7)]">
+          <section className="mt-[clamp(0.85rem,2svh,1.25rem)] rounded-[var(--app-radius-xl)] border-[3px] border-[var(--app-border-strong)] bg-[var(--app-surface-elevated)] px-[clamp(1.05rem,2.5svh,1.55rem)] py-[clamp(1rem,2.15svh,1.35rem)] shadow-[0_10px_18px_rgba(0,0,0,.42),inset_0_0_42px_rgba(255,255,255,.035)]">
+            <h2 className="text-[clamp(1.45rem,3svh,1.85rem)] leading-tight font-semibold tracking-normal text-[var(--app-text)]">
               Entrar com código
               <br />
               completo
             </h2>
-            <p className="mt-3 text-center text-[clamp(0.9rem,1.82svh,1.03rem)] leading-tight text-white">
+            <p className="mt-3 text-center text-[clamp(0.9rem,1.82svh,1.03rem)] leading-tight text-[var(--app-text)]">
               Cole o código FIGUS_ALBUM_V1 que você já salvou.
             </p>
 
@@ -203,17 +204,17 @@ export function Onboarding({
                   <Button
                     type="button"
                     variant="outline"
-                    className="mt-5 h-[clamp(2.85rem,5.2svh,3.25rem)] w-full rounded-[0.95rem] border-[3px] border-[#D5B15E] bg-[#2A2A2A] text-[clamp(0.98rem,2.08svh,1.2rem)] font-black text-[#D5B15E] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] hover:bg-[#303030] hover:text-[#D5B15E]"
+                    className="mt-5 h-[clamp(2.85rem,5.2svh,3.25rem)] w-full rounded-[var(--app-radius-md)] border-[3px] border-[var(--app-border-strong)] bg-[var(--app-surface-elevated)] text-[clamp(0.98rem,2.08svh,1.2rem)] font-black text-[var(--app-gold-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] hover:bg-[var(--app-surface-gold)] hover:text-[var(--app-gold-accent)]"
                   />
                 }
               >
                 <ClipboardBadgeIcon />
                 Colar código de acesso
               </DialogTrigger>
-              <DialogContent className="bg-[#1F1F1F] text-white ring-[#D5B15E]/70">
+              <DialogContent className="bg-[var(--app-dialog-bg)] text-[var(--app-dialog-text)] ring-[var(--app-border-strong)]">
                 <DialogHeader>
                   <DialogTitle>Código completo</DialogTitle>
-                  <DialogDescription className="text-white/70">
+                  <DialogDescription className="text-[var(--app-muted-text)]">
                     FIGUS_ALBUM_V1 seguido do código e da chave.
                   </DialogDescription>
                 </DialogHeader>
@@ -240,7 +241,7 @@ export function Onboarding({
                         </InputGroupButton>
                       </InputGroupAddon>
                     </InputGroup>
-                    <FieldDescription className="text-white/60">
+                    <FieldDescription className="text-[var(--app-muted-text)]">
                       Cole da área de transferência se preferir.
                     </FieldDescription>
                   </Field>

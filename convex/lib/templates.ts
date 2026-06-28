@@ -1,3 +1,5 @@
+import { appError } from "./errors";
+
 export type AlbumTemplateId = "wc2026";
 
 export type StickerTemplate = {
@@ -167,7 +169,7 @@ for (const template of Object.values(TEMPLATES)) {
 export function getTemplate(templateId: AlbumTemplateId): AlbumTemplate {
   const t = TEMPLATES[templateId];
   if (!t) {
-    throw new Error(`Unknown template: ${templateId}`);
+    throw appError("INVALID_STICKER");
   }
   return t;
 }
@@ -179,7 +181,7 @@ export function getSectionTemplate(
   const t = getTemplate(templateId as AlbumTemplateId);
   const sec = t.sections.find((s) => s.id === sectionId);
   if (!sec) {
-    throw new Error(`Unknown section: ${sectionId}`);
+    throw appError("INVALID_STICKER");
   }
   return sec;
 }
@@ -195,11 +197,11 @@ export function assertStickerExists(
 ): StickerTemplate {
   const idx = stickerIndex.get(templateId as AlbumTemplateId);
   if (!idx) {
-    throw new Error(`Unknown template: ${templateId}`);
+    throw appError("INVALID_STICKER");
   }
   const st = idx.get(stickerKey);
   if (!st) {
-    throw new Error(`Unknown sticker: ${stickerKey}`);
+    throw appError("INVALID_STICKER");
   }
   return st;
 }

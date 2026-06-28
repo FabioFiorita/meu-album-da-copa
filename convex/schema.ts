@@ -27,25 +27,4 @@ export default defineSchema({
     .index("by_album", ["albumId"])
     .index("by_album_section", ["albumId", "sectionId"])
     .index("by_album_sticker", ["albumId", "stickerKey"]),
-
-  tradeOffers: defineTable({
-    fromAlbumId: v.id("albums"),
-    toAlbumId: v.id("albums"),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("accepted"),
-      v.literal("declined"),
-      v.literal("cancelled"),
-      v.literal("completed"),
-    ),
-    fromGives: v.array(v.string()),
-    toGives: v.array(v.string()),
-    note: v.optional(v.string()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    acceptedAt: v.optional(v.number()),
-    completedAt: v.optional(v.number()),
-  })
-    .index("by_from_status", ["fromAlbumId", "status"])
-    .index("by_to_status", ["toAlbumId", "status"]),
 });

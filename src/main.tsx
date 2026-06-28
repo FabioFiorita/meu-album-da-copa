@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import "./index.css";
 import App from "./App.tsx";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { applyAppTheme, readStoredTheme } from "@/lib/appTheme";
 
 function syncRootColorScheme() {
@@ -41,7 +42,9 @@ const convex = new ConvexReactClient(
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ConvexProvider client={convex}>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </ConvexProvider>
   </StrictMode>,
 );

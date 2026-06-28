@@ -53,6 +53,34 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ------------------------------------------------------------------ *
+ * BRAND TYPE SCALE — 6 steps + micro
+ * Collapses the ~94 ad-hoc text-[Npx] sizes (13 distinct values, 7–21px)
+ * onto a fixed scale. Tailwind v4 emits the utilities
+ * text-2xs / text-xs / text-sm / text-base / text-lg / text-xl
+ * from these --text-* tokens (each with a paired line-height).
+ *   text-2xs  9px  ← 7–9px   (sticker labels, micro meta)
+ *   text-xs  11px  ← 10–11px (badges, captions)
+ *   text-sm  13px  ← 12–13px (secondary copy, controls)
+ *   text-base 15px ← 14–16px (body)
+ *   text-lg  18px  ← 17–18px (section titles)
+ *   text-xl  21px  ← 20–21px (headers)
+ * ------------------------------------------------------------------ */
+@theme {
+  --text-2xs: 0.5625rem;
+  --text-2xs--line-height: 1.1;
+  --text-xs: 0.6875rem;
+  --text-xs--line-height: 1.3;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.4;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.35;
+  --text-xl: 1.3125rem;
+  --text-xl--line-height: 1.25;
+}
+
 :root {
   --app-bg: #050606;
   --app-border: rgba(214, 180, 93, 0.45);
@@ -80,14 +108,53 @@
   --app-segment-bg: rgba(0, 0, 0, 0.16);
   --app-surface-strong: rgba(21, 21, 21, 0.95);
   --app-text: #ffffff;
+
+  /* --- Success / green ramp (derived from #13c95f, #0fb653, #35e66f) --- */
+  --app-success: #13c95f; /* primary green button fill */
+  --app-success-strong: #0fb653; /* darker green: hover / gradient stop */
+  --app-success-bright: #35e66f; /* bright "tenho" accent (text / border) */
+  --app-on-accent: #ffffff; /* text on green fills */
+
+  /* --- Brand gradients (CTA button + progress bar) --- */
+  --app-cta-gradient: linear-gradient(180deg, #16d866, #0fb653);
+  --app-progress-gradient: linear-gradient(90deg, #13c95f, #ffd65c);
+
+  /* --- Surface tiers (page bg → elevated); see --app-card/--app-field-bg --- */
+  --app-surface: #171717; /* primary card / panel surface (most common) */
+  --app-surface-elevated: #272727; /* raised controls / chips */
+  --app-surface-gold: #2b2619; /* gold-tinted dark surface */
+
+  /* --- Scrims / overlays --- */
+  --app-scrim: rgba(0, 0, 0, 0.42); /* darkens team-colored backgrounds */
+  --app-overlay: rgba(0, 0, 0, 0.1); /* modal / sheet backdrop */
+
+  /* --- Extra border tier + readable gold text accent --- */
+  --app-border-strong: rgba(214, 180, 93, 0.65);
+  --app-gold-accent: var(--app-gold-strong); /* readable gold for text/emphasis */
+
+  /* --- Elevation (collapses ~30 ad-hoc box-shadows) --- */
+  --app-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.22);
+  --app-shadow-md:
+    0 6px 16px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --app-shadow-lg:
+    0 14px 36px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --app-shadow-cta: 0 8px 22px rgba(16, 190, 88, 0.24); /* green CTA glow */
+
+  /* --- Radius scale (collapses rounded-[1.35rem] & friends) --- */
+  --app-radius-sm: 0.625rem; /* 10px – buttons, badges (matches --radius) */
+  --app-radius-md: 0.95rem; /* ~15px – inputs, small cards */
+  --app-radius-lg: 1.15rem; /* ~18px – cards */
+  --app-radius-xl: 1.35rem; /* ~22px – primary cards (dominant) */
+  --app-radius-2xl: 1.6rem; /* ~26px – sheets / large panels */
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.508 0.118 165.612);
-  --primary-foreground: oklch(0.979 0.021 166.113);
+  --primary: oklch(0.732 0.198 150); /* brand green #13c95f */
+  --primary-foreground: oklch(0.985 0 0); /* white on green */
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
@@ -97,7 +164,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.563 0.113 75); /* brand gold (light) #9c6a13 */
   --chart-1: oklch(0.845 0.143 164.978);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.596 0.145 163.225);
@@ -141,6 +208,32 @@
   --app-segment-bg: rgba(126, 77, 13, 0.07);
   --app-surface-strong: rgba(255, 244, 219, 0.94);
   --app-text: #211a10;
+
+  /* --- Success / green ramp (light) --- */
+  --app-success: #13c95f; /* button fill stays vivid in both themes */
+  --app-success-strong: #0fb653;
+  --app-success-bright: #0d7b3c; /* darkened so it reads on cream */
+  --app-on-accent: #ffffff;
+
+  /* --- Brand gradients (shared values across themes) --- */
+  --app-cta-gradient: linear-gradient(180deg, #16d866, #0fb653);
+  --app-progress-gradient: linear-gradient(90deg, #13c95f, #ffd65c);
+
+  /* --- Surface tiers (warm cream) --- */
+  --app-surface: rgba(255, 250, 238, 0.92); /* primary card / panel surface */
+  --app-surface-elevated: rgba(255, 252, 244, 0.95); /* raised controls */
+  --app-surface-gold: rgba(250, 242, 222, 0.92); /* gold-tinted cream surface */
+
+  /* --- Scrims / overlays (kept dark: they sit over team colors) --- */
+  --app-scrim: rgba(0, 0, 0, 0.42);
+  --app-overlay: rgba(0, 0, 0, 0.1);
+
+  /* --- Extra border tier + readable gold text accent --- */
+  --app-border-strong: rgba(153, 103, 18, 0.68);
+  --app-gold-accent: var(--app-gold-strong); /* #6f4707 – dark gold on cream */
+
+  /* Elevation, radius and the type scale are theme-independent and inherit
+     from :root / @theme — no light overrides needed. */
 }
 
 .dark {
@@ -150,8 +243,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.432 0.095 166.913);
-  --primary-foreground: oklch(0.979 0.021 166.113);
+  --primary: oklch(0.732 0.198 150); /* brand green #13c95f */
+  --primary-foreground: oklch(0.985 0 0); /* white on green */
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -161,7 +254,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.782 0.113 88); /* brand gold #d6b45d */
   --chart-1: oklch(0.845 0.143 164.978);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.596 0.145 163.225);
@@ -196,6 +289,32 @@
   textarea {
     font-size: max(16px, 1em);
   }
+
+  /* Kill the grey tap-flash on mobile for interactive elements */
+  a,
+  button,
+  [role="button"],
+  input,
+  label,
+  select,
+  summary,
+  textarea,
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Global reduced-motion guard — neutralizes animations/transitions
+     app-wide (not just the country panel) for users who opt out. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
@@ -207,7 +326,11 @@
         rgba(5, 6, 6, 0.02) 42%,
         rgba(5, 6, 6, 0.22) 100%
       ),
-      url("/app-background-dark-desktop.png") center / cover no-repeat;
+      image-set(
+          url("/app-background-dark-desktop.webp") type("image/webp"),
+          url("/app-background-dark-desktop.png") type("image/png")
+        )
+        center / cover no-repeat;
     content: "";
     filter: saturate(1.05) contrast(1.03) brightness(1.02);
     inset: 0;
@@ -257,7 +380,11 @@
         rgba(255, 248, 230, 0.02) 44%,
         rgba(246, 226, 186, 0.2) 100%
       ),
-      url("/app-background-light-desktop.png") center / cover no-repeat;
+      image-set(
+          url("/app-background-light-desktop.webp") type("image/webp"),
+          url("/app-background-light-desktop.png") type("image/png")
+        )
+        center / cover no-repeat;
     filter: saturate(1.04) contrast(1.02) brightness(1.01);
     opacity: 1;
   }
@@ -271,7 +398,11 @@
           rgba(5, 6, 6, 0.02) 42%,
           rgba(5, 6, 6, 0.22) 100%
         ),
-        url("/app-background.png") center / cover no-repeat;
+        image-set(
+            url("/app-background.webp") type("image/webp"),
+            url("/app-background.png") type("image/png")
+          )
+          center / cover no-repeat;
     }
 
     .app-shell[data-theme="light"]::before {
@@ -282,7 +413,11 @@
           rgba(255, 248, 230, 0.02) 44%,
           rgba(246, 226, 186, 0.2) 100%
         ),
-        url("/app-background-light.png") center / 100% 100% no-repeat;
+        image-set(
+            url("/app-background-light.webp") type("image/webp"),
+            url("/app-background-light.png") type("image/png")
+          )
+          center / 100% 100% no-repeat;
     }
   }
 
@@ -300,104 +435,6 @@
         rgba(255, 248, 230, 0.06) 72%,
         rgba(255, 248, 230, 0.72) 100%
       );
-  }
-
-  .app-shell[data-theme="light"] [class*="bg-[#050606]"],
-  .app-shell[data-theme="light"] [class*="bg-[#141414]"],
-  .app-shell[data-theme="light"] [class*="bg-[#151515]"],
-  .app-shell[data-theme="light"] [class*="bg-[#171717]"],
-  .app-shell[data-theme="light"] [class*="bg-[#1b1b1b]"],
-  .app-shell[data-theme="light"] [class*="bg-[#1F1F1F]"],
-  .app-shell[data-theme="light"] [class*="bg-[#1f1f1f]"],
-  .app-shell[data-theme="light"] [class*="bg-[#272727]"],
-  .app-shell[data-theme="light"] [class*="bg-[#2A2A2A]"],
-  .app-shell[data-theme="light"] [class*="bg-[#2a2a2a]"],
-  .app-shell[data-theme="light"] [class*="bg-[#2b2619]"] {
-    background-color: var(--app-card) !important;
-  }
-
-  .app-shell[data-theme="light"] [class*="text-white"] {
-    color: var(--app-text) !important;
-  }
-
-  .app-shell[data-theme="light"] .team-card [class*="text-white"],
-  .app-shell[data-theme="light"] .sticker-slot-lite [class*="text-white"] {
-    color: #ffffff !important;
-  }
-
-  .app-shell[data-theme="light"] .album-detail-stats [class*="text-white"],
-  .app-shell[data-theme="light"] .album-detail-stats .album-detail-stat-label {
-    color: rgba(33, 26, 16, 0.74) !important;
-  }
-
-  .app-shell[data-theme="light"] .album-detail-stats .album-detail-stat-value {
-    color: #211a10 !important;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
-  }
-
-  .app-shell[data-theme="light"] .album-remove-mode-message {
-    color: #211a10 !important;
-  }
-
-  .app-shell[data-theme="light"] .busca-tab .quick-code-panel {
-    background-color: rgba(255, 250, 238, 0.58) !important;
-    border-color: rgba(156, 106, 19, 0.22) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.62),
-      0 8px 20px rgba(111, 71, 7, 0.08) !important;
-  }
-
-  .app-shell[data-theme="light"] .busca-tab .quick-code-input {
-    background-color: rgba(255, 255, 255, 0.62) !important;
-    border-color: rgba(156, 106, 19, 0.56) !important;
-    color: #211a10 !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      0 7px 16px rgba(111, 71, 7, 0.14) !important;
-  }
-
-  .app-shell[data-theme="light"] .busca-tab .quick-code-input:focus {
-    background-color: rgba(255, 255, 255, 0.78) !important;
-    border-color: rgba(111, 71, 7, 0.72) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.78),
-      0 0 0 2px rgba(156, 106, 19, 0.2),
-      0 8px 18px rgba(111, 71, 7, 0.14) !important;
-  }
-
-  .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#d6b45d]"],
-  .app-shell[data-theme="light"] .repetidas-tab [class*="text-[#f4d77c]"],
-  .app-shell[data-theme="light"] .trocar-tab [class*="text-[#d6b45d]"],
-  .app-shell[data-theme="light"] .trocar-tab [class*="text-[#f4d77c]"] {
-    color: var(--app-gold-strong) !important;
-  }
-
-  .app-shell[data-theme="light"] .repetidas-tab [data-slot="button"]:disabled,
-  .app-shell[data-theme="light"] .trocar-tab [data-slot="button"]:disabled {
-    background-color: rgba(139, 91, 19, 0.08) !important;
-    border-color: rgba(111, 71, 7, 0.28) !important;
-    color: rgba(33, 26, 16, 0.68) !important;
-    opacity: 0.88 !important;
-  }
-
-  .app-shell[data-theme="light"] input::placeholder,
-  .app-shell[data-theme="light"] textarea::placeholder {
-    color: var(--app-muted-text) !important;
-  }
-
-  .app-shell[data-theme="light"] .country-name-outline {
-    -webkit-text-stroke: 0.2px rgba(255, 255, 255, 0.52);
-    text-shadow:
-      0 1px 2px rgba(255, 255, 255, 0.5),
-      0 0 2px rgba(0, 0, 0, 0.28);
-  }
-
-  .app-shell[data-theme="light"] .trocar-tab .trade-team-label {
-    -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.78);
-    color: #ffffff !important;
-    text-shadow:
-      0 1px 1px rgba(0, 0, 0, 0.92),
-      0 0 3px rgba(0, 0, 0, 0.8);
   }
 
   .country-name-outline {

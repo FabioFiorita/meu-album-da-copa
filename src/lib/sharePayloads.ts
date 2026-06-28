@@ -1,8 +1,7 @@
-import type { MissingPayloadV1, DuplicatesPayloadV1 } from "@convex/lib/sharePayloads";
+import type { MissingPayloadV1 } from "@convex/lib/sharePayloads";
 import type { AlbumTemplateId } from "@convex/lib/templates";
 
 const MISSING_PREFIX = "FIGUS_MISSING_V1.";
-const DUPES_PREFIX = "FIGUS_DUPES_V1.";
 
 function utf8ToBase64Url(json: string): string {
   const bytes = new TextEncoder().encode(json);
@@ -31,10 +30,6 @@ export function encodeMissingPayloadV1(data: MissingPayloadV1): string {
   return MISSING_PREFIX + utf8ToBase64Url(JSON.stringify(data));
 }
 
-export function encodeDuplicatesPayloadV1(data: DuplicatesPayloadV1): string {
-  return DUPES_PREFIX + utf8ToBase64Url(JSON.stringify(data));
-}
-
 export function decodeMissingPayloadV1Client(raw: string): MissingPayloadV1 {
   const t = raw.trim();
   if (!t.startsWith(MISSING_PREFIX)) {
@@ -56,10 +51,6 @@ export function decodeMissingPayloadV1Client(raw: string): MissingPayloadV1 {
 
 export function isMissingPayloadRaw(raw: string): boolean {
   return raw.trim().startsWith(MISSING_PREFIX);
-}
-
-export function isDupesPayloadRaw(raw: string): boolean {
-  return raw.trim().startsWith(DUPES_PREFIX);
 }
 
 export type ExportMissingInput = {

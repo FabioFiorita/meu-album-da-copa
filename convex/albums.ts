@@ -8,6 +8,7 @@ import {
   hashWriteKey,
 } from "./lib/access";
 import { requireAlbumByCode, requireWriteAccess, toPublicAlbumFields } from "./lib/albumAccess";
+import { appError } from "./lib/errors";
 import { WC_2026_TEMPLATE } from "./lib/templates";
 import type { AlbumTemplateId } from "./lib/templates";
 
@@ -69,6 +70,7 @@ export const create = mutation({
       WC_2026_TEMPLATE.title;
     let code = "";
     let attempts = 0;
+    let allocated = false;
     while (attempts < 30) {
       attempts++;
       code = createAlbumCode();
@@ -76,10 +78,13 @@ export const create = mutation({
         .query("albums")
         .withIndex("by_code", (q) => q.eq("code", code))
         .unique();
-      if (!taken) break;
+      if (!taken) {
+        allocated = true;
+        break;
+      }
     }
-    if (!code) {
-      throw new Error("Failed to allocate album code");
+    if (!allocated) {
+      throw appError("CODE_ALLOCATION_FAILED");
     }
     const writeKey = createWriteKey();
     const salt = createKeySalt();

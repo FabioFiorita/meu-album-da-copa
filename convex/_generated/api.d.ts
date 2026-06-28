@@ -19,7 +19,6 @@ import type * as lib_sharePayloads from "../lib/sharePayloads.js";
 import type * as lib_stickerKeys from "../lib/stickerKeys.js";
 import type * as lib_templates from "../lib/templates.js";
 import type * as stickers from "../stickers.js";
-import type * as trades from "../trades.js";
 
 import type {
   ApiFromModules,
@@ -39,7 +38,6 @@ declare const fullApi: ApiFromModules<{
   "lib/stickerKeys": typeof lib_stickerKeys;
   "lib/templates": typeof lib_templates;
   stickers: typeof stickers;
-  trades: typeof trades;
 }>;
 
 /**

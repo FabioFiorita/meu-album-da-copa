@@ -15,10 +15,21 @@ export function normalizeWriteKey(writeKey: string): string {
 }
 
 function pickChars(length: number): string {
+  // Cryptographically secure character picking with rejection sampling to
+  // avoid modulo bias against the 30-char ALPHABET. The album code and the
+  // 24-char writeKey (the only edit secret) depend on this being unbiased.
+  // Accept only bytes below the largest multiple of ALPHABET.length that fits
+  // in a byte (240 for 30 chars); reject 240-255 so every char is equiprobable.
+  const max = Math.floor(256 / ALPHABET.length) * ALPHABET.length;
   let s = "";
-  for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * ALPHABET.length);
-    s += ALPHABET.charAt(idx);
+  while (s.length < length) {
+    const bytes = new Uint8Array(length - s.length);
+    crypto.getRandomValues(bytes);
+    for (const byte of bytes) {
+      if (byte >= max) continue;
+      s += ALPHABET.charAt(byte % ALPHABET.length);
+      if (s.length === length) break;
+    }
   }
   return s;
 }
